@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Build and Run Multi-file",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "g++ -std=c++23 -Wall -g *.cpp -o main1.exe && main1.exe"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Build and run all cpp files"
+        }
+    ]
+}

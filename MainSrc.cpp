@@ -7,12 +7,13 @@
 #include <chrono>
 using namespace std;
 
-int getRank(int x) {
-    int rank = (x - 1) % 13 + 1;
-    if (rank > 10) {
-        return 10;
+int rankTable[53];
+
+void initRankTable(int rankTable[]) {
+    for (int i = 1; i <= 52; i++) {
+        int r = (i - 1) % 13 + 1; //Return ranks
+        rankTable[i] = (r > 10) ? 10 : r; //Return points
     }
-    return rank;
 }
 //Deck will be A of Spades (1) to K of Spades (13). Then Clubs, Diamonds and Hearts
 string getSuit(int x) {
@@ -48,6 +49,7 @@ public:
     int score = 0;
     bool isBust = false;
     bool hasAce = false;
+    vector<int> rank;
 
     Player() : score(0), isBust(false), hasAce(false) {}
 
@@ -55,6 +57,7 @@ public:
 
     void reset() {
         hand.clear();
+        rank.clear();
         isBust = false;
         hasAce = false;
         score = 0;
@@ -65,8 +68,10 @@ public:
         hasAce = false;
         score = 0;
         for (auto c : hand) {
-            if (getRank(c) == 1) hasAce = true;
-            score += getRank(c);
+            int r = rankTable[c];
+            rank.push_back(r);
+            if (r == 1) hasAce = true;
+            score += r;
         }
 
         if (hasAce && (score + 10) < 22) {
@@ -80,8 +85,8 @@ public:
 
     HandType getHandType() {
         if (hand.size() == 2) {
-            int r1 = getRank(hand[0]);
-            int r2 = getRank(hand[1]);
+            int r1 = rank[0];
+            int r2 = rank[1];
             if (r1 == 1 && r2 == 1) {
                 return XIBANG;
             }
@@ -112,28 +117,18 @@ class Match {
 protected:
     vector<int> deck;
     int playerCount;
+    int cardIdx = 0;
 public:
-    vector<Player*> players;
-    Dealer* dealer;
+    vector<Player> players;
+    Dealer dealer;
 
     Match() {
         deckInit();
         shuffle();
     }
 
-    ~Match() {
-        for (Player* p : players) {
-            delete p; 
-        }
-        players.clear();
-    }
-
-    void addPlayer(Player* p) {
+    void addPlayer(Player p) {
         players.push_back(p);
-    }
-
-    void setDealer(Dealer* d) {
-        dealer = d;
     }
 
     void deckInit() {
@@ -143,31 +138,34 @@ public:
     }
 
     void shuffle() {
-        unsigned seed = static_cast<unsigned>(
+        static unsigned seed = static_cast<unsigned>(
             chrono::high_resolution_clock::now().time_since_epoch().count()
         );
-        mt19937 gen(seed);
+        static mt19937 gen(seed);
 
         std::shuffle(deck.begin(), deck.end(), gen);
     }
 
+    void deckReset() {
+        cardIdx = 0;
+    }
     int drawCard() {
         if (deck.empty()) return -1; //never happens, because we will impose a limit of 10 players max
-        int card = deck.back();
-        deck.pop_back();
+        int card = deck[cardIdx];
+        cardIdx++;
         return card;
     }
 
     void deal2Card() {
-        for (Player* p : players) {
-            p->hand.push_back(drawCard());
-            p->hand.push_back(drawCard());
-            p->calculateScore();
+        for (Player& p : players) {
+            p.hand.push_back(drawCard());
+            p.hand.push_back(drawCard());
+            p.calculateScore();
         }
 
-        dealer->hand.push_back(drawCard());
-        dealer->hand.push_back(drawCard());
-        dealer->calculateScore();
+        dealer.hand.push_back(drawCard());
+        dealer.hand.push_back(drawCard());
+        dealer.calculateScore();
     }
 };
     
@@ -193,40 +191,57 @@ void printHand(Player& p) {
     }
 }
 
-void Process(Match& match, Dealer* dealer) {
-    cout << "Dealer's hand: ";
-    printHand(*dealer);
-    for (auto p : match.players) {
-        int result = compareHands(*p, *dealer);
+void Process(Match& match, Dealer& dealer, int& DWin, int& Draw, int& PWin) {
+    //cout << "Dealer's hand: ";
+    //printHand(*dealer);
+    for (auto& p : match.players) {
+        int result = compareHands(p, dealer);
         
         if (result == 1) {
-            cout << '\n' << "Player wins with hand: ";
-            printHand(*p);
+            //cout << '\n' << "Player wins with hand: ";
+            //printHand(*p);
+            PWin++;
         } else if (result == -1) {
-            cout << '\n' << "Dealer wins against player's hand: ";
-            printHand(*p);
+            //cout << '\n' << "Dealer wins against player's hand: ";
+            //printHand(*p);
+            DWin++;
         } else {
-            cout << '\n' << "Draw with player's hand: ";
-            printHand(*p);
+            //cout << '\n' << "Draw with player's hand: ";
+            //printHand(*p);
+            Draw++;
         }
     }
 }
 
 int main() {
-    Match match;
-    Dealer* dealer = new Dealer(); //always has dealer
-    match.setDealer(dealer);
-
     cout << "How many players?" << '\n';
     int n; cin >> n;
 
+    int DWin = 0;
+    int Draw = 0;
+    int PWin = 0;
+
+    initRankTable(rankTable);
+    
+    Match match;
+    match.dealer.reset();
     for (int i = 0; i < n - 1; i++) {
-        match.addPlayer(new Player());
+        match.addPlayer(Player());
     }
+    for (int z = 0; z < 1000000; z++) {
+        match.deckReset();
+        match.shuffle();
+        match.dealer.reset();
+        for (auto& p : match.players) {
+            p.reset();
+        }
+        
+        match.deal2Card();
 
-    match.deal2Card();
-
-    Process(match, dealer);
-
+        Process(match, match.dealer, DWin, Draw,PWin);
+    }
+    cout << "Dealer wins " << DWin << " matches" << '\n';
+    cout << "Player wins " << PWin << " matches" << '\n';
+    cout << "Draw " << Draw << " matches" << '\n';
     return 0;
 }

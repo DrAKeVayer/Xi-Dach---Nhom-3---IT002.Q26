@@ -136,6 +136,13 @@ public:
     int getSoftScore() const {
         return softScore;
     }
+
+    void printHand() const {
+        for (auto c : hand) {
+            cout << getRankName(c);
+            cout << getSuit(c) << ", ";
+        }
+    }
 };
 
 class Dealer : public Player {
@@ -321,17 +328,10 @@ int compareHands(Player& a, Player& b) {
     return 0; //Tie
 }
 
-void printHand(Player& p) {
-    for (auto c : p.hand) {
-        cout << getRankName(c);
-        cout << getSuit(c) << ", ";
-    }
-}
-
 void doResult(Player& p, Dealer& d, int& result, Stat& stat) {
     if (result == 1) {
         //cout << '\n' << "Player wins with hand: ";
-        //printHand(p);
+        //p.printHand();
         stat.upPWin();
         if (p.getScore() == 16) stat.upPWin16();
         if (p.getHandType() == XIDACH) stat.upPBJWin();
@@ -349,7 +349,7 @@ void doResult(Player& p, Dealer& d, int& result, Stat& stat) {
         }
     } else if (result == -1) {
         //cout << '\n' << "Dealer wins against player's hand: ";
-        //printHand(p);
+        //p.printHand();
         stat.upDWin();
         stat.upPLoseVSup(d.getFaceup());
         stat.upPLoseAfterHitTime(p.hand.size() - 2);
@@ -360,7 +360,7 @@ void doResult(Player& p, Dealer& d, int& result, Stat& stat) {
         
     } else {
         //cout << '\n' << "Draw with player's hand: ";
-        //printHand(p);
+        //p.printHand();
         stat.upDraw();
         if (d.getHandType() == XIDACH) stat.upBJDraw();
     }
@@ -379,14 +379,14 @@ bool playerWants(Player& p, Dealer& d) { //Modify this to change the strategy of
 
 void Process(Match& match, Dealer& dealer, Stat& stat) {
     //cout << "Dealer's first hand: ";
-    //printHand(dealer);
+    //dealer.printHand();
     dealer.calculateScore();
     while (dealer.getScore() < 17) {
         match.dealCardTo(dealer);
         dealer.calculateScore();
     }
     //cout << '\n' << "Dealer's final hand: ";
-    //printHand(dealer);
+    //dealer.printHand();
     for (auto& p : match.players) {
         p.calculateScore();
         if (p.getHandType() == XIDACH || dealer.getHandType() == XIDACH) {

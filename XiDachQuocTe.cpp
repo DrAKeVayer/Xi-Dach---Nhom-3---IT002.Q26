@@ -156,12 +156,58 @@ public:
         return softScore;
     }
 
+    void printNewCard() const {
+        cout << getRankName(hand.back());
+            cout << getSuit(hand.back());
+    }
+
     void printHand() const {
-        for (auto c : hand) {
+        for (int c : hand) {
             cout << getRankName(c);
             cout << getSuit(c) << ", ";
         }
+        cout << "(";
+        if (isSoft) cout << " Soft ";
+        cout << getScore() << ")";
     }
+};
+
+class Player {  
+public:
+    vector<Hand> hands;
+
+    Player() {
+        hands.reserve(10);
+        hands.push_back(Hand()); 
+    }
+
+    virtual ~Player() {}
+
+    void resetPlayer() {
+        hands.clear();
+        hands.push_back(Hand()); 
+    }
+
+    void splitHand(int x) {
+        hands.push_back(Hand());
+        hands.back().hand.push_back(hands[x].hand.back());
+        hands[x].hand.pop_back();
+    }
+
+    void printHand() const {
+        for (int i = 0; i < hands.size(); i++) {
+            cout << "Hand " << i + 1 << " of this player: ";
+            for (int c : hands[i].hand) {
+                cout << getRankName(c);
+                cout << getSuit(c) << ", ";
+            }
+            cout << "(";
+            if (hands[i].isSoft) cout << " Soft ";
+            cout << hands[i].getScore() << ")";
+        }
+    }
+
+    
 };
 
 class Dealer : public Player {
@@ -274,7 +320,7 @@ protected:
     int PWinHard [22] = {0};
     int PLoseFirst2Soft [22] = {0}; //if player loses, track the score of first 2 cards (soft or hard)
     int PLoseFirst2Hard [22] = {0};
-    int PWinFirst2Soft [22] = {0}; //if player wins, track the score of first 2 cards (soft or hard)
+    int PWinFirst2Soft [22] = {0};  //if player wins, track the score of first 2 cards (soft or hard)
     int PWinFirst2Hard [22] = {0};
     int PWinVSup [11] = {0}; //if player wins, track the up card of dealer
     int PLoseVSup [11] = {0}; //if player loses, track the up card of dealer
@@ -368,7 +414,7 @@ int compareHands(Hand& a, Hand& b) {
     return 0; //Tie
 }
 
-void doResult(Player& p, Dealer& d, int& result, Stat& stat) {
+void doResult(Hand& p, Hand& d, int& result, Stat& stat) {
     if (result == 1) {
         //cout << '\n' << "Player wins with hand: ";
         //p.printHand();
@@ -427,14 +473,14 @@ int playerWants(Hand& p, Hand& d) { //Modify this to change the strategy of play
 
 void ProcessSimulation(Match& match, Dealer& dealer, Stat& stat) {
     //cout << "Dealer's first hand: ";
-    //dealer.printHand();
-    dealer.calculateScore();
-    while (dealer.getScore() < 17) {
-        match.dealCardTo(dealer);
-        dealer.calculateScore();
+    //dealer.printDealerHand();
+    dealer.hands[0].calculateScore();
+    while (dealer.hands[0].getScore() < 17) {
+        match.dealCardToPlayer(dealer, 0);
+        dealer.hands[0].calculateScore();
     }
     //cout << '\n' << "Dealer's final hand: ";
-    //dealer.printHand();
+    //dealer.printDealerHand();
     for (auto& p : match.players) {
         for (int i = 0; i < p.hands.size(); i++) {
             bool resolved = false;

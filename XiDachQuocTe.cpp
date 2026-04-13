@@ -5,9 +5,13 @@
 #include <algorithm>
 #include <random>
 #include <chrono>
+#include <windows.h> //for print unicode symbols
 using namespace std;
 
+void Play();
+
 int rankTable[53];
+string rankName[53];
 
 void initRankTable(int rankTable[]) {
     for (int i = 1; i <= 52; i++) {
@@ -18,11 +22,22 @@ void initRankTable(int rankTable[]) {
 //Deck will be A of Spades (1) to K of Spades (13). Then Clubs, Diamonds and Hearts
 string getSuit(int x) {
     int suit = (x - 1) / 13;
-    if (suit == 0) return " of Spades";
-    if (suit == 1) return " of Clubs";
-    if (suit == 2) return " of Diamonds";
-    if (suit == 3) return " of Hearts";
+    if (suit == 0) return "♠";
+    else if (suit == 1) return "♣";
+    else if (suit == 2) return "♢";
+    else if (suit == 3) return "♡";
     return " of Default";
+}
+
+void initRankName(string rankName[]) {
+    for (int i = 1; i <= 52; i++) {
+        int r = (i - 1) % 13 + 1; //Return number
+        if (r == 13) rankName[i] = "K";
+        else if (r == 12) rankName[i] = "Q";
+        else if (r == 11) rankName[i] = "J";
+        else if (r == 1) rankName[i] = "A";
+        else rankName[i] = to_string(r);
+    } 
 }
 
 string getRankName(int x) {
@@ -43,25 +58,30 @@ enum HandType {
     XIBANG = 3
 };
 
-class Player {  
+enum Action {
+    HIT = 0,
+    STAND = 1,
+    SPLIT = 2,
+    DOUBLED = 3,
+    XET = 4
+};
+
+class Hand {
 public:
     vector<int> hand;
     int score = 0;
     bool isBust = false;
     bool hasAce = false;
     bool isSoft = false;
+    bool isSplitable = false;
     int softScore = 0;
     int first2SoftScore = 0;
     int first2HardScore = 0;
-    vector<int> rank;
 
-    Player() : score(0), isBust(false), hasAce(false) {}
-
-    virtual ~Player() {}
+    Hand() : score(0) {}
 
     void reset() {
         hand.clear();
-        rank.clear();
         isBust = false;
         hasAce = false;
         score = 0;
@@ -71,23 +91,17 @@ public:
         isBust = false;
         hasAce = false;
         isSoft = false;
-        rank.clear();
+        isSplitable = false;
         score = 0;
         softScore = 0;
-        first2SoftScore = 0;
-        first2HardScore = 0;
         for (auto c : hand) {
             int r = rankTable[c];
-            rank.push_back(r);
             if (r == 1) hasAce = true;
             score += r;
         }
 
-        if (hasAce) {
-            if ((score + 10) <= 21) isSoft = true;
-        }
-
         if (hasAce && (score + 10) < 22) {
+            isSoft = true;
             score += 10;
             softScore = score;
             if (hand.size() == 2) first2SoftScore = score;
@@ -95,13 +109,13 @@ public:
 
         if (!isSoft && hand.size() == 2) first2HardScore = score;
 
+        if (hand.size() == 2) {
+            if (getRankName(hand[0]) == getRankName(hand[1])) isSplitable = true;
+        }
+
         if (score > 21) {
             isBust = true;
         }
-    }
-
-    int getRank(int x) {
-        return rank[x];
     }
 
     void receiveCard(int x) {
@@ -109,10 +123,15 @@ public:
         calculateScore();
     }
 
+    int getFaceup() {
+        int r = rankTable[hand[0]];
+        return r;
+    }
+
     HandType getHandType() {
         if (hand.size() == 2) {
-            int r1 = rank[0];
-            int r2 = rank[1];
+            int r1 = rankTable[hand[0]];
+            int r2 = rankTable[hand[1]];
             if (r1 == 1 && r2 == 1) {
                 return XIBANG;
             }
@@ -147,9 +166,16 @@ public:
 
 class Dealer : public Player {
 public:
-    int getFaceup() {
-        int r = rankTable[hand[0]];
-        return r;
+    void printDealerFirstHand() const {
+        cout << getRankName(hands[0].hand[0]);
+        cout << getSuit(hands[0].hand[0]) << ", " << "?";
+    }
+
+    void printDealerHand() const {
+        for (int c : hands[0].hand) {
+            cout << getRankName(c);
+            cout << getSuit(c) << ", ";
+        }
     }
 };
 
@@ -201,20 +227,34 @@ public:
         return card;
     }
 
-    void dealCardTo(Player& p) {
-        p.receiveCard(drawCard());
+    void dealCardToPlayer(Player& p, int x) {
+        p.hands[x].receiveCard(drawCard());
+        p.hands[x].calculateScore();
+    }
+
+    void dealCardToHand(Hand& h) {
+        h.receiveCard(drawCard());
+        h.calculateScore();
     }
 
     void deal2Card() {
         for (Player& p : players) {
-            p.hand.push_back(drawCard());
-            p.hand.push_back(drawCard());
-            p.calculateScore();
+            p.hands[0].hand.push_back(drawCard());
+            p.hands[0].hand.push_back(drawCard());
+            p.hands[0].calculateScore();
         }
 
-        dealer.hand.push_back(drawCard());
-        dealer.hand.push_back(drawCard());
-        dealer.calculateScore();
+        dealer.hands[0].hand.push_back(drawCard());
+        dealer.hands[0].hand.push_back(drawCard());
+        dealer.hands[0].calculateScore();
+    }
+
+    void splitTo(Player& p, int x) {
+        p.splitHand(x);
+        dealCardToPlayer(p, x);
+        dealCardToPlayer(p, p.hands.size() - 1);
+        p.hands[x].calculateScore();
+        p.hands.back().calculateScore();
     }
 };
 
@@ -307,7 +347,7 @@ public:
     }
 };
     
-int compareHands(Player& a, Player& b) {
+int compareHands(Hand& a, Hand& b) {
     if (a.isBust) {
         return -1;
     }
@@ -333,10 +373,10 @@ void doResult(Player& p, Dealer& d, int& result, Stat& stat) {
         //cout << '\n' << "Player wins with hand: ";
         //p.printHand();
         stat.upPWin();
-        if (p.getScore() == 16) stat.upPWin16();
-        if (p.getHandType() == XIDACH) stat.upPBJWin();
+        if (p.getHandType() == XIDACH) stat.upPBJWin(); //wins due to BJ won't count for any stat below
         else {
             stat.upPWinVSup(d.getFaceup());
+            if (p.getScore() == 16) stat.upPWin16();
             if (p.first2HardScore > 0) stat.upPWinFirst2Hard(p.first2HardScore);
                 else stat.upPWinFirst2Soft(p.first2SoftScore);
             if (d.isBust) stat.upPWinDBust();
@@ -357,27 +397,35 @@ void doResult(Player& p, Dealer& d, int& result, Stat& stat) {
             else stat.upPLoseFirst2Soft(p.first2SoftScore);
         if (d.getHandType() == XIDACH) stat.upDBJWin();
         if (p.getScore() == 16) stat.upPLose16();
+        stat.upPTotalHit(p.hand.size() - 2);
         
     } else {
         //cout << '\n' << "Draw with player's hand: ";
         //p.printHand();
         stat.upDraw();
         if (d.getHandType() == XIDACH) stat.upBJDraw();
+        stat.upPTotalHit(p.hand.size() - 2);
     }
 }
 
-bool playerWants(Player& p, Dealer& d) { //Modify this to change the strategy of players. Note that dealer always stand on 17 or higher
+int playerWants(Hand& p, Hand& d) { //Modify this to change the strategy of players. Note that dealer always stand on 17 or higher
+    /*0: stand
+      1: hit
+      2: split
+      3: double down
+    */
     p.calculateScore();
-    if (p.getScore() >= 21) return false; //best possible score
-    if (p.getScore() < 16) return true;
-    if (p.isSoft) return true;
+    if (p.getScore() >= 21) return 0; //best possible score
+    if (p.isSplitable) return 2;
+    if (p.getScore() < 16) return 1;
+    if (p.isSoft) return 1;
     if (p.getScore() == 16) {
-        if (d.getFaceup() == 1) return true;
+        if (d.getFaceup() == 1) return 1;
     }
-    return false;
+    return 0;
 }
 
-void Process(Match& match, Dealer& dealer, Stat& stat) {
+void ProcessSimulation(Match& match, Dealer& dealer, Stat& stat) {
     //cout << "Dealer's first hand: ";
     //dealer.printHand();
     dealer.calculateScore();
@@ -388,50 +436,215 @@ void Process(Match& match, Dealer& dealer, Stat& stat) {
     //cout << '\n' << "Dealer's final hand: ";
     //dealer.printHand();
     for (auto& p : match.players) {
-        p.calculateScore();
-        if (p.getHandType() == XIDACH || dealer.getHandType() == XIDACH) {
-            int result = compareHands(p, dealer);
-            doResult(p, dealer, result, stat);
-            continue;
-        }
+        for (int i = 0; i < p.hands.size(); i++) {
+            bool resolved = false;
 
-        while(playerWants(p, dealer)) {
-            match.dealCardTo(p);
-        }
+            while (true) {
+                Hand& h = p.hands[i];
+                h.calculateScore();
 
-        int result = compareHands(p, dealer);
-        doResult(p, dealer, result, stat);
+                if (h.getHandType() == XIDACH || dealer.hands[0].getHandType() == XIDACH) {
+                    int result = compareHands(h, dealer.hands[0]);
+                    doResult(h, dealer.hands[0], result, stat);
+                    resolved = true;
+                    break;
+                }
+
+                int action = playerWants(h, dealer.hands[0]);
+
+                if (h.isBust || action == 0) {
+                    break;
+                }
+                if (action == 2) { // SPLIT
+                    match.splitTo(p, i);
+                    continue;
+                }
+                if (action == 1) { // HIT
+                    match.dealCardToHand(h);
+                    continue;
+                }
+                break;
+            }
+
+            if (!resolved) {
+                Hand& h = p.hands[i];
+                int result = compareHands(h, dealer.hands[0]);
+                doResult(h, dealer.hands[0], result, stat);
+            }
+        }
     }
     //cout << '\n';
 }
 
-int main() {
+void Simulation() {
     cout << "How many players?" << '\n';
     int n; cin >> n;
     cout << "How many Matches?" << '\n';
     int u; cin >> u;
 
-    initRankTable(rankTable);
-    
     Match match;
     Stat stat;
-    match.dealer.reset();
+    match.dealer.hands[0].reset();
     for (int i = 0; i < n - 1; i++) {
         match.addPlayer(Player());
     }
     for (int z = 0; z < u; z++) {
         match.deckReset();
         match.shuffle();
-        match.dealer.reset();
+        match.dealer.hands[0].reset();
         for (auto& p : match.players) {
-            p.reset();
+            p.resetPlayer();
         }
         
         match.deal2Card();
 
-        Process(match, match.dealer, stat);
+        ProcessSimulation(match, match.dealer, stat);
     }
     cout << '\n';
     stat.printStat();
+}
+
+bool DealerWants(Match& match, Dealer& d) {
+    d.hands[0].calculateScore();
+    if (d.hands[0].getScore() < 17) return true;
+    return false;
+}
+
+void HitPlay(Match& match, Dealer& d, int i) {
+    match.dealCardToHand(match.players[0].hands[i]);
+    cout << "You just hit for: ";
+    match.players[0].hands[i].printNewCard();
+    cout << '\n' << "Your hand number " << i + 1 << " is now ";
+    match.players[0].hands[i].printHand();
+    if (match.players[0].hands[i].isBust) {
+        cout << '\n' << "This hand is busted! Bad luck ..." << '\n';
+        return;
+    }
+}
+
+void ProcessPlay(Match& match, Dealer& d) {
+    Stat stat;
+    cout << "Dealer's hand: ";
+    d.printDealerFirstHand();
+    cout << '\n' << "Your hand: ";
+    match.players[0].printHand();
+    cout << '\n';
+
+    if (d.hands[0].getHandType() == XIDACH && match.players[0].hands[0].getHandType() != XIDACH) {
+        cout << "Dealer has BlackJack and you don't. You lost!" << '\n';
+        cout << "Dealer's final hand: ";
+        d.hands[0].printHand();
+        cout << "Try another round? (y = Yes, n = no)" << '\n';
+        char x; cin >> x;
+        if (x == 'y') Play();
+        else return;
+    }
+    else if (d.hands[0].getHandType() != XIDACH && match.players[0].hands[0].getHandType() == XIDACH) {
+        cout << "You have BlackJack and Dealer doesn't. You win!" << '\n';
+        cout << "Dealer's final hand: ";
+        d.hands[0].printHand();
+        cout << "Try another round? (y = Yes, n = no)" << '\n';
+        char x; cin >> x;
+        if (x == 'y') Play();
+        else return;
+    }
+    else if (d.hands[0].getHandType() == XIDACH && match.players[0].hands[0].getHandType() == XIDACH) {
+        cout << "Both you and dealer have BlackJack. This round is a tie" << '\n';
+        cout << "Dealer's final hand: ";
+        d.hands[0].printHand();
+        cout << "Try another round? (y = Yes, n = no)" << '\n';
+        char x; cin >> x;
+        if (x == 'y') Play();
+        else return;
+    }
+    for (int i = 0; i < match.players[0].hands.size(); i++) {
+        match.players[0].hands[i].calculateScore();
+        if (match.players[0].hands[i].isSplitable) {
+            cout << "Split? (s = Split, n = No)" << '\n';
+            char s; cin >> s;
+            if (s == 's') {
+                match.splitTo(match.players[0], i);
+            }
+            cout << "Your hands are now: ";
+            match.players[0].printHand();
+            i--;
+            continue; //to see if the new hand is splitable again
+        }
+        else {
+            while (true) {
+                if (match.players[0].hands[i].isBust) break;
+                if (match.players[0].hands[i].getScore() < 16) {
+                    cout << "You must hit now! Any key to proceed" << '\n';
+                    char x; cin >> x;
+                    HitPlay(match, d, i);
+                    continue;
+                }
+                if (!match.players[0].hands[i].isBust) {
+                    cout << '\n' << "Choose action for your hand number " << i + 1 << ": h = Hit, s = Stand" << '\n';
+                    char s; cin >> s;
+                    if (s == 'h') {
+                        HitPlay(match, d, i);
+                        continue;
+                    }
+                    else if (s == 's') {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    cout << "You chose Stand (or busted, haha) on all of your hands. Here comes the moment of truth ..." << '\n';
+    cout << "Dealer's first hand is: ";
+    d.hands[0].printHand();
+    while (DealerWants(match, d)) {
+        match.dealCardToHand(d.hands[0]);
+        cout << '\n' << "Dealer just draw: ";
+        d.hands[0].printNewCard();
+    }
+    cout << '\n' << "Dealer's final hand: ";
+    d.hands[0].printHand();
+
+    for (int i = 0; i < match.players[0].hands.size(); i++) {
+        int result = compareHands(match.players[0].hands[i], d.hands[0]);                
+        if (result == 1) {
+            cout << '\n' << "Congrats! Your hand number " << i + 1 << " beats the Dealer!" << '\n';
+        }
+        else if (result == -1) {
+            cout << '\n' << "Oh no! Dealer beats your hand number " << i + 1 << '\n';
+        }
+        else if (result == 0) {
+            cout << '\n' << "Your hand number " << i + 1 << " ties with Dealer" << '\n';
+        }
+    }
+    return;
+}
+
+void Play() {
+    Match match;
+    match.dealer.hands[0].reset();
+    match.addPlayer(Player());
+    match.deckReset();
+    match.shuffle();
+    match.deal2Card();
+
+    ProcessPlay(match, match.dealer);
+}
+
+int main() {
+    SetConsoleOutputCP(CP_UTF8);
+    initRankTable(rankTable);
+
+    int choice;
+
+    cout << R"(
+    Type your mode:
+    1: Simulation
+    2: Play
+    )";
+    cin >> choice;
+
+    if (choice == 1) Simulation();
+    else if (choice == 2) Play();
+    
     return 0;
 }

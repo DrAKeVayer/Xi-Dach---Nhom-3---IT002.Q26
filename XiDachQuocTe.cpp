@@ -679,6 +679,7 @@ void Play() {
 int main() {
     SetConsoleOutputCP(CP_UTF8);
     initRankTable(rankTable);
+    initRankName(rankName);
 
     int choice;
 

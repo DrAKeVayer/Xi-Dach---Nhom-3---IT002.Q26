@@ -320,7 +320,7 @@ protected:
     int PWinHard [22] = {0};
     int PLoseFirst2Soft [22] = {0}; //if player loses, track the score of first 2 cards (soft or hard)
     int PLoseFirst2Hard [22] = {0};
-    int PWinFirst2Soft [22] = {0}; //if player wins, track the score of first 2 cards (soft or hard)
+    int PWinFirst2Soft [22] = {0};  //if player wins, track the score of first 2 cards (soft or hard)
     int PWinFirst2Hard [22] = {0};
     int PWinVSup [11] = {0}; //if player wins, track the up card of dealer
     int PLoseVSup [11] = {0}; //if player loses, track the up card of dealer

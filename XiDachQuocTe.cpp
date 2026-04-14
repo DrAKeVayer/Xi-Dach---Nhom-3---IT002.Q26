@@ -12,7 +12,7 @@ void Play();
 
 int rankTable[53];
 string rankName[53];
-char suitTable[53];
+string suitTable[53];
 
 void initRankTable(int rankTable[]) {
     for (int i = 1; i <= 52; i++) {
@@ -22,13 +22,13 @@ void initRankTable(int rankTable[]) {
 }
 //Deck will be A of Spades (1) to K of Spades (13). Then Clubs, Diamonds and Hearts
 
-void initSuitTable(char suitTable[]) {
+void initSuitTable(string suitTable[]) {
     for (int i = 1; i < 53; i++) {
         int suit = (i - 1) / 13;
-        if (suit == 0) suitTable[i] = '♠';
-        else if (suit == 1) suitTable[i] = '♣';
-        else if (suit == 2) suitTable[i] = '♢';
-        else if (suit == 3) suitTable[i] = '♡';
+        if (suit == 0) suitTable[i] = "♠";
+        else if (suit == 1) suitTable[i] = "♣";
+        else if (suit == 2) suitTable[i] = "♢";
+        else if (suit == 3) suitTable[i] = "♡";
     }
 }
 
@@ -58,6 +58,8 @@ public:
     bool hasAce = false;
     bool isSoft = false;
     bool isSplitable = false;
+    bool SplitWon = false; //both split and won
+    bool SplitLost = false; //both split and lost
     int softScore = 0;
     int first2SoftScore = 0;
     int first2HardScore = 0;
@@ -94,7 +96,7 @@ public:
         if (!isSoft && hand.size() == 2) first2HardScore = score;
 
         if (hand.size() == 2) {
-            if (rankName[hand[0]] == rankName[hand[1]]) isSplitable = true;
+            if (rankTable[hand[0]] == rankTable[hand[1]]) isSplitable = true;
         }
 
         if (score > 21) {
@@ -111,6 +113,15 @@ public:
         int r = rankTable[hand[0]];
         return r;
     }
+
+    void setWon() {
+        SplitWon = true;
+    }
+
+    void setLost() {
+        SplitLost = true;
+    }
+
 
     HandType getHandType() {
         if (hand.size() == 2) {
@@ -159,6 +170,7 @@ public:
 class Player {  
 public:
     vector<Hand> hands;
+    int SplitCount = 0;
 
     Player() {
         hands.reserve(10);
@@ -176,6 +188,10 @@ public:
         hands.push_back(Hand());
         hands.back().hand.push_back(hands[x].hand.back());
         hands[x].hand.pop_back();
+    }
+
+    void setSplit(int x) {
+        SplitCount = x;
     }
 
     void printHand() const {
@@ -314,6 +330,12 @@ protected:
     int PStandSoftWin = 0; //if player loses, but would have won if they stand at the last soft hand
     int PWinAfterHitTime[12] = {0};  //track how many hits if player wins
     int PLoseAfterHitTime[12] = {0}; //track how many hits if player loses
+
+    int TotalSplit = 0;
+    int SplitWin = 0;
+    int PSplitWinRank[11] = {0};
+    int PSplitWinVSup[11] = {0};
+    int PSplitLoseVSup[11] = {0};
 public:
     void upPWinDBust() { PWinDBust++; }
     void upPLose16() { PLose16++; }
@@ -339,18 +361,22 @@ public:
     void upPWinAfterHitTime(int i) { PWinAfterHitTime[i]++; }
     void upPLoseAfterHitTime(int i) { PLoseAfterHitTime[i]++; }
 
-    
+    void upTotalSplit(int x) { TotalSplit += x; }
+    void upSplitWin() { SplitWin++; }
+    void upPSplitWinRank(int i) { PSplitWinRank[i]++; }
+    void upPSplitWinVSup(int i) { PSplitWinVSup[i]++; }
+    void upPSplitLoseVSup(int i) { PSplitLoseVSup[i]++; }
 
     void printStat() {
-        cout << "Player wins " << PWin << " times" << '\n';
-        cout << "Dealer wins " << DWin << " times" << '\n';
-        cout << "Draw " << Draw << " times" << '\n';
-        cout << "Player wins with BlackJack " << PBJWin << " times" << '\n';
-        cout << "Dealer wins with BlackJack " << DBJWin << " times" << '\n';
-        cout << "Draw with BlackJack " << BJDraw << " times" << '\n';
-        cout << "Player wins on 16 " << PWin16 << " times" << '\n';
-        cout << "Player loses on 16 " << PLose16 << " times" << '\n';
-        cout << "Player wins and Dealer busts " << PWinDBust << " times" << '\n';
+        cout << "Player wins " << PWin << " hands" << '\n';
+        cout << "Dealer wins " << DWin << " hands" << '\n';
+        cout << "Draw " << Draw << " hands" << '\n';
+        cout << "Player wins with BlackJack " << PBJWin << " hands" << '\n';
+        cout << "Dealer wins with BlackJack " << DBJWin << " hands" << '\n';
+        cout << "Draw with BlackJack " << BJDraw << " hands" << '\n';
+        cout << "Player wins on 16 " << PWin16 << " hands" << '\n';
+        cout << "Player loses on 16 " << PLose16 << " hands" << '\n';
+        cout << "Player wins and Dealer busts " << PWinDBust << " hands" << '\n';
         cout << "Player wins with soft score from 16 to 21: " << '\n';
         for (int i = 16; i < 22; i++) cout << PWinSoft[i] << " - ";
         cout << '\n' << "Player wins with hard score from 16 to 21: " << '\n';
@@ -367,13 +393,21 @@ public:
         for (int i = 1; i < 11; i++) cout << PWinVSup[i] << " - ";
         cout << '\n' << "Player loses against dealer up card ranked 1 to 10: " << '\n';
         for (int i = 1; i < 11; i++) cout << PLoseVSup[i] << " - ";
-        cout << '\n' << "Player hits a total of: " << PTotalHit << " times" << '\n';
-        cout << '\n' << "Player wins after hit: " << PHitWin << " times" << '\n';
-        cout << '\n' << "Player wins without hit: " << PStandedWin << " times" << '\n';
-        cout << '\n' << "Player wins this many times after 0 - 1 - 2 - ... - 10 hits: " << '\n';
+        cout << '\n' << "Player hits a total of: " << PTotalHit << " hands";
+        cout << '\n' << "Player wins after hit: " << PHitWin << " hands";
+        cout << '\n' << "Player wins without hit: " << PStandedWin << " hands";
+        cout << '\n' << "Player wins this many hands after 0 - 1 - 2 - ... - 10 hits: " << '\n';
         for (int i = 0; i < 11; i++) cout << PWinAfterHitTime[i] << " - ";
-        cout << '\n' << "Player loses this many times after 0 - 1 - 2 - ... - 10 hits: " << '\n';
+        cout << '\n' << "Player loses this many hands after 0 - 1 - 2 - ... - 10 hits: " << '\n';
         for (int i = 0; i < 11; i++) cout << PLoseAfterHitTime[i] << " - ";
+        cout << '\n' << "Player split " << TotalSplit << " hands";
+        cout << '\n' << "Player wins after split " << SplitWin << " hands";
+        cout << '\n' << "Player wins after split rank from 1 to 10: " << '\n';
+        for (int i = 1; i < 11; i++) cout << PSplitWinRank[i] << " - ";
+        cout << '\n' << "Player wins after split against dealer up card ranked 1 to 10: " << '\n';
+        for (int i = 1; i < 11; i++) cout << PSplitWinVSup[i] << " - ";
+        cout << '\n' << "Player loses after split against dealer up card ranked 1 to 10: " << '\n';
+        for (int i = 1; i < 11; i++) cout << PSplitLoseVSup[i] << " - ";
     }
 };
     
@@ -416,6 +450,11 @@ void doResult(Hand& p, Hand& d, int& result, Stat& stat) {
             if (p.hand.size() - 2) stat.upPHitWin();
                 else stat.upPStandedWin();
             stat.upPWinAfterHitTime(p.hand.size() - 2);
+            if (p.SplitWon) {
+                stat.upSplitWin();
+                stat.upPSplitWinRank(rankTable[p.hand[0]]);
+                stat.upPSplitWinVSup(d.getFaceup());
+            }
         }
     } else if (result == -1) {
         //cout << '\n' << "Dealer wins against player's hand: ";
@@ -428,7 +467,9 @@ void doResult(Hand& p, Hand& d, int& result, Stat& stat) {
         if (d.getHandType() == XIDACH) stat.upDBJWin();
         if (p.getScore() == 16) stat.upPLose16();
         stat.upPTotalHit(p.hand.size() - 2);
-        
+        if (p.SplitLost) {
+            stat.upPSplitLoseVSup(d.getFaceup());
+        }
     } else {
         //cout << '\n' << "Draw with player's hand: ";
         //p.printHand();
@@ -475,6 +516,8 @@ void ProcessSimulation(Match& match, Dealer& dealer, Stat& stat) {
 
                 if (h.getHandType() == XIDACH || dealer.hands[0].getHandType() == XIDACH) {
                     int result = compareHands(h, dealer.hands[0]);
+                    if (result == 1 && p.hands.size() > 1) h.setWon();
+                    if (result == -1 && p.hands.size() > 1) h.setLost();
                     doResult(h, dealer.hands[0], result, stat);
                     resolved = true;
                     break;
@@ -487,6 +530,7 @@ void ProcessSimulation(Match& match, Dealer& dealer, Stat& stat) {
                 }
                 if (action == 2) { // SPLIT
                     match.splitTo(p, i);
+                    stat.upTotalSplit(1);
                     continue;
                 }
                 if (action == 1) { // HIT
@@ -499,6 +543,8 @@ void ProcessSimulation(Match& match, Dealer& dealer, Stat& stat) {
             if (!resolved) {
                 Hand& h = p.hands[i];
                 int result = compareHands(h, dealer.hands[0]);
+                if (result == 1 && p.hands.size() > 1) h.setWon();
+                if (result == -1 && p.hands.size() > 1) h.setLost();
                 doResult(h, dealer.hands[0], result, stat);
             }
         }

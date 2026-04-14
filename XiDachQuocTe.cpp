@@ -5,13 +5,14 @@
 #include <algorithm>
 #include <random>
 #include <chrono>
-#include <windows.h> //for print unicode symbols
+#include <windows.h> //for printing unicode symbols
 using namespace std;
 
 void Play();
 
 int rankTable[53];
 string rankName[53];
+char suitTable[53];
 
 void initRankTable(int rankTable[]) {
     for (int i = 1; i <= 52; i++) {
@@ -20,13 +21,15 @@ void initRankTable(int rankTable[]) {
     }
 }
 //Deck will be A of Spades (1) to K of Spades (13). Then Clubs, Diamonds and Hearts
-string getSuit(int x) {
-    int suit = (x - 1) / 13;
-    if (suit == 0) return "♠";
-    else if (suit == 1) return "♣";
-    else if (suit == 2) return "♢";
-    else if (suit == 3) return "♡";
-    return " of Default";
+
+void initSuitTable(char suitTable[]) {
+    for (int i = 1; i < 53; i++) {
+        int suit = (i - 1) / 13;
+        if (suit == 0) suitTable[i] = '♠';
+        else if (suit == 1) suitTable[i] = '♣';
+        else if (suit == 2) suitTable[i] = '♢';
+        else if (suit == 3) suitTable[i] = '♡';
+    }
 }
 
 void initRankName(string rankName[]) {
@@ -40,30 +43,11 @@ void initRankName(string rankName[]) {
     } 
 }
 
-string getRankName(int x) {
-    int rank = (x - 1) % 13 + 1;
-
-    if (rank == 1) return "A";
-    if (rank == 11) return "J";
-    if (rank == 12) return "Q";
-    if (rank == 13) return "K";
-
-    return to_string(rank);
-}
-
 enum HandType {
     THUONG = 0,
     NGULINH = 1,
     XIDACH = 2,
     XIBANG = 3
-};
-
-enum Action {
-    HIT = 0,
-    STAND = 1,
-    SPLIT = 2,
-    DOUBLED = 3,
-    XET = 4
 };
 
 class Hand {
@@ -110,7 +94,7 @@ public:
         if (!isSoft && hand.size() == 2) first2HardScore = score;
 
         if (hand.size() == 2) {
-            if (getRankName(hand[0]) == getRankName(hand[1])) isSplitable = true;
+            if (rankName[hand[0]] == rankName[hand[1]]) isSplitable = true;
         }
 
         if (score > 21) {
@@ -157,14 +141,14 @@ public:
     }
 
     void printNewCard() const {
-        cout << getRankName(hand.back());
-            cout << getSuit(hand.back());
+        cout << rankName[hand.back()];
+            cout << suitTable[hand.back()];
     }
 
     void printHand() const {
         for (int c : hand) {
-            cout << getRankName(c);
-            cout << getSuit(c) << ", ";
+            cout << rankName[c];
+            cout << suitTable[c] << ", ";
         }
         cout << "(";
         if (isSoft) cout << " Soft ";
@@ -198,8 +182,8 @@ public:
         for (int i = 0; i < hands.size(); i++) {
             cout << "Hand " << i + 1 << " of this player: ";
             for (int c : hands[i].hand) {
-                cout << getRankName(c);
-                cout << getSuit(c) << ", ";
+                cout << rankName[c];
+                cout << suitTable[c] << ", ";
             }
             cout << "(";
             if (hands[i].isSoft) cout << " Soft ";
@@ -213,14 +197,14 @@ public:
 class Dealer : public Player {
 public:
     void printDealerFirstHand() const {
-        cout << getRankName(hands[0].hand[0]);
-        cout << getSuit(hands[0].hand[0]) << ", " << "?";
+        cout << rankName[hands[0].hand[0]];
+        cout << suitTable[hands[0].hand[0]] << ", " << "?";
     }
 
     void printDealerHand() const {
         for (int c : hands[0].hand) {
-            cout << getRankName(c);
-            cout << getSuit(c) << ", ";
+            cout << rankName[c];
+            cout << suitTable[c] << ", ";
         }
     }
 };
@@ -680,6 +664,7 @@ int main() {
     SetConsoleOutputCP(CP_UTF8);
     initRankTable(rankTable);
     initRankName(rankName);
+    initSuitTable(suitTable);
 
     int choice;
 

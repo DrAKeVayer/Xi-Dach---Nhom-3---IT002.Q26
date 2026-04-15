@@ -124,20 +124,9 @@ public:
 
 
     HandType getHandType() {
-        if (hand.size() == 2) {
-            int r1 = rankTable[hand[0]];
-            int r2 = rankTable[hand[1]];
-            if (r1 == 1 && r2 == 1) {
-                return XIBANG;
-            }
-        }
 
         if (hand.size() == 2 && score == 21) {
             return XIDACH;
-        }
-
-        if (hand.size() == 5 && score <= 21) {
-            return NGULINH;
         }
 
         return THUONG;

@@ -117,7 +117,6 @@ protected:
     int PWinAfterHitTime[12] = { 0 };  //track how many hits if player wins
     int PLoseAfterHitTime[12] = { 0 }; //track how many hits if player loses
 
-
     int DBustCount = 0;
     int BustDraw = 0;
 
@@ -150,6 +149,8 @@ public:
     void upBustDraw();
 
     virtual void printStat();
+
+    virtual void exportStat(ofstream& file);
 };
 
 class StatBJ : public Stat {
@@ -177,6 +178,9 @@ protected:
     int DoubleWinVSup[11] = { 0 };
     int DoubleLoseVSup[11] = { 0 };
 
+    int SurrenderCount = 0;
+    int SurrenderSuccess = 0; //if you would have lost trying to play that hand
+
     double EVBJ;
 
 public:
@@ -203,9 +207,11 @@ public:
     void upDoubleVSup(int i);
     void upDoubleWinVSup(int i);
     void upDoubleLoseVSup(int i);
-
+    void upSurrenderCount();
 
     void printStat() override;
+
+    void exportStat(ofstream& file) override;
 };
 
 class StatXD : public Stat {
@@ -235,6 +241,8 @@ protected:
     int PNLWinCount = 0;
     int DNLWinCount = 0;
     int NLDrawCount = 0;
+
+    double EVXD = 0;
 public:
     void upTotalCheck();
     void upDCheckWin();
@@ -261,7 +269,10 @@ public:
     void upPNLWinCount();
     void upDNLWinCount();
     void upNLDrawCount();
+    void setEVXD();
 
     void printStat() override;
+
+    void exportStat(ofstream& file) override;
 };
 

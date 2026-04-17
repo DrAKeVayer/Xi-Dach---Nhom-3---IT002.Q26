@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <random>
 #include <chrono>
+#include <iomanip>
+#include <fstream>
 #include <windows.h> //for printing unicode symbols
 
 using namespace std;
@@ -36,5 +38,8 @@ enum Action {
     XET3 = 2,
     XET4 = 3,
     SPLIT = 4,
-    DDOUBLE = 5
+    DDOUBLE = 5,
+    SURRENDER = 6
 };
+
+string getFileName(const string& base, const string& csv);

@@ -11,7 +11,7 @@ int playerWantsXD(Hand& p, Hand& d);
 
 void ProcessSimulationXD(Match& match, Dealer& dealer, StatXD& stat);
 
-void SimulationXD();
+void SimulationXD(ofstream& file);
 
 bool dealerWantsToCheck(Hand& p, Hand& d);
 

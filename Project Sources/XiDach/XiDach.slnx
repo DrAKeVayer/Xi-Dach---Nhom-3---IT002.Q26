@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="XiDach/XiDach.vcxproj" Id="33ddaaca-b8e8-4cea-b56f-ada7bc5352ae" />
+</Solution>

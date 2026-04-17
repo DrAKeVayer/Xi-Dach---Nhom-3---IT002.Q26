@@ -312,6 +312,80 @@ void Stat::printStat() {
     for (int i = 0; i < 11; i++) cout << PLoseAfterHitTime[i] << " - ";
 }
 
+void Stat::exportStat(ofstream& file) {
+    file << "Number,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21\n";
+    file << "PWin," << PWin << '\n';
+    file << "PLose," << PLose << '\n';
+    file << "DWin," << DWin << '\n';
+    file << "Draw," << Draw << '\n';
+    file << "PBJWin," << PBJWin << '\n';
+    file << "DBJWin," << DBJWin << '\n';
+    file << "BJDraw," << BJDraw << '\n';
+    file << "PWin16," << PWin16 << '\n';
+    file << "PLose16," << PLose16 << '\n';
+    file << "PWinDBust," << PWinDBust << '\n';
+    file << "PWinSoft";
+    for (int i = 0; i < 22; i++) {
+        file << "," << PWinSoft[i];
+    }
+    file << '\n';
+    file << "PWinSoft";
+    for (int i = 0; i < 22; i++) {
+        file << "," << PWinSoft[i];
+    }
+    file << '\n';
+
+    file << "PWinHard";
+    for (int i = 0; i < 22; i++) {
+        file << "," << PWinHard[i];
+    }
+    file << '\n';
+
+    file << "PLoseFirst2Soft";
+    for (int i = 0; i < 22; i++) {
+        file << "," << PLoseFirst2Soft[i];
+    }
+    file << '\n';
+
+    file << "PLoseFirst2Hard";
+    for (int i = 0; i < 22; i++) {
+        file << "," << PLoseFirst2Hard[i];
+    }
+    file << '\n';
+
+    file << "PWinFirst2Soft";
+    for (int i = 0; i < 22; i++) {
+        file << "," << PWinFirst2Soft[i];
+    }
+    file << '\n';
+
+    file << "PWinFirst2Hard";
+    for (int i = 0; i < 22; i++) {
+        file << "," << PWinFirst2Hard[i];
+    }
+    file << '\n';
+
+    file << "PTotalHit," << PTotalHit << '\n';
+    file << "PHitWin," << PHitWin << '\n';
+    file << "PStandedWin," << PStandedWin << '\n';
+    file << "PStandSoftWin," << PStandSoftWin << '\n';
+
+    file << "PWinAfterHitTime";
+    for (int i = 0; i < 12; i++) {
+        file << "," << PWinAfterHitTime[i];
+    }
+    file << '\n';
+
+    file << "PLoseAfterHitTime";
+    for (int i = 0; i < 12; i++) {
+        file << "," << PLoseAfterHitTime[i];
+    }
+    file << '\n';
+
+    file << "DBustCount," << DBustCount << '\n';
+    file << "BustDraw," << BustDraw << '\n';
+}
+
 void StatBJ::upPWinVSup(int i) { PWinVSup[i]++; }
 void StatBJ::upPLoseVSup(int i) { PLoseVSup[i]++; }
 void StatBJ::upTotalSplit(int x) { TotalSplit += x; }
@@ -333,10 +407,12 @@ void StatBJ::upDoubleLoseSoftScore(int i) { DoubleLoseSoftScore[i]++; }
 void StatBJ::upDoubleVSup(int i) { DoubleVSup[i]++; }
 void StatBJ::upDoubleWinVSup(int i) { DoubleWinVSup[i]++; }
 void StatBJ::upDoubleLoseVSup(int i) { DoubleLoseVSup[i]++; }
-
+void StatBJ::upSurrenderCount() { SurrenderCount++; }
 
 void StatBJ::setEVBJ() {
-    double nomi = (PWin - PBJWin) + 1.5*PBJWin - PLose + InsureWinCount - 0.5*InsureLoseCount;
+    double numer = (PWin - PBJWin) + 1.5*PBJWin - PLose + InsureWinCount - 0.5*InsureLoseCount - 0.5*SurrenderCount + 2*DoubleWinCount - 2*DoubleLoseCount;
+    double deno = PWin + DWin + Draw + DoubleCount + SurrenderCount;
+    EVBJ = numer / deno;
 }
 
 void StatBJ::printStat() {
@@ -374,6 +450,99 @@ void StatBJ::printStat() {
     for (int i = 12; i < 22; i++) cout << DoubleLoseHardScore[i] << " - ";
     cout << '\n' << "Against Dealer's up card ranked 1 to 10: ";
     for (int i = 1; i < 11; i++) cout << DoubleLoseVSup[i] << " - ";
+    cout << '\n' << "Player surrenders " << SurrenderCount << " hands total";
+    cout << '\n' << '\n' << "Final Expected Value: " << fixed << setprecision(3) << EVBJ;
+}
+
+void StatBJ::exportStat(ofstream& file) {
+    Stat::exportStat(file);
+    file << "PWinVSup";
+    for (int i = 0; i < 11; i++) {
+        file << "," << PWinVSup[i];
+    }
+    file << '\n';
+
+    file << "PLoseVSup";
+    for (int i = 0; i < 11; i++) {
+        file << "," << PLoseVSup[i];
+    }
+    file << '\n';
+
+    file << "TotalSplit," << TotalSplit << '\n';
+    file << "SplitWin," << SplitWin << '\n';
+
+    file << "PSplitWinRank";
+    for (int i = 0; i < 11; i++) {
+        file << "," << PSplitWinRank[i];
+    }
+    file << '\n';
+
+    file << "PSplitWinVSup";
+    for (int i = 0; i < 11; i++) {
+        file << "," << PSplitWinVSup[i];
+    }
+    file << '\n';
+
+    file << "PSplitLoseVSup";
+    for (int i = 0; i < 11; i++) {
+        file << "," << PSplitLoseVSup[i];
+    }
+    file << '\n';
+
+    file << "InsureCount," << InsureCount << '\n';
+    file << "InsureWinCount," << InsureWinCount << '\n';
+    file << "InsureLoseCount," << InsureLoseCount << '\n';
+
+    file << "DoubleCount," << DoubleCount << '\n';
+    file << "DoubleWinCount," << DoubleWinCount << '\n';
+    file << "DoubleLoseCount," << DoubleLoseCount << '\n';
+
+    file << "DoubleWinHardScore";
+    for (int i = 0; i < 22; i++) {
+        file << "," << DoubleWinHardScore[i];
+    }
+    file << '\n';
+
+    file << "DoubleWinSoftScore";
+    for (int i = 0; i < 22; i++) {
+        file << "," << DoubleWinSoftScore[i];
+    }
+    file << '\n';
+
+    file << "DoubleLoseHardScore";
+    for (int i = 0; i < 22; i++) {
+        file << "," << DoubleLoseHardScore[i];
+    }
+    file << '\n';
+
+    file << "DoubleLoseSoftScore";
+    for (int i = 0; i < 22; i++) {
+        file << "," << DoubleLoseSoftScore[i];
+    }
+    file << '\n';
+
+    file << "DoubleVSup";
+    for (int i = 0; i < 11; i++) {
+        file << "," << DoubleVSup[i];
+    }
+    file << '\n';
+
+    file << "DoubleWinVSup";
+    for (int i = 0; i < 11; i++) {
+        file << "," << DoubleWinVSup[i];
+    }
+    file << '\n';
+
+    file << "DoubleLoseVSup";
+    for (int i = 0; i < 11; i++) {
+        file << "," << DoubleLoseVSup[i];
+    }
+    file << '\n';
+
+    file << "SurrenderCount," << SurrenderCount << '\n';
+    file << "SurrenderSuccess," << SurrenderSuccess << '\n';
+    file << "Expected Value," << EVBJ << '\n';
+    file.close();
 }
 
 void StatXD::upTotalCheck() { TotalCheck++; }
@@ -401,6 +570,12 @@ void StatXD::upXBDrawCount() { XBDrawCount++; }
 void StatXD::upPNLWinCount() { PNLWinCount++; }
 void StatXD::upDNLWinCount() { DNLWinCount++; }
 void StatXD::upNLDrawCount() { NLDrawCount++; }
+
+void StatXD::setEVXD() {
+    double numer = PWin - DWin;
+    double deno = PWin + DWin + Draw;
+    EVXD = numer / deno;
+}
 
 void StatXD::printStat() {
     Stat::printStat();
@@ -439,5 +614,78 @@ void StatXD::printStat() {
     cout << "Dealer has NGULINH " << DNLCount << " hands total" << '\n';
     cout << "Dealer wins with NGULINH " << DNLWinCount << " hands total" << '\n';
     cout << "NGULINH tie " << NLDrawCount << " times total" << '\n';
+    cout << '\n' << '\n' << "Final Expected Value: " << fixed << setprecision(3) << EVXD;
+}
+
+void StatXD::exportStat(ofstream& file) {
+    Stat::exportStat(file);
+    file << "TotalCheck," << TotalCheck << '\n';
+    file << "DCheckWin," << DCheckWin << '\n';
+    file << "DCheckLose," << DCheckLose << '\n';
+    file << "DCheckWinPreTurn," << DCheckWinPreTurn << '\n';
+    file << "DCheckLosePreTurn," << DCheckLosePreTurn << '\n';
+
+    file << "DCheckWinPreTurnScore";
+    for (int i = 0; i < 11; i++) {
+        file << "," << DCheckWinPreTurnScore[i];
+    }
+    file << '\n';
+
+    file << "DCheckLosePreTurnScore";
+    for (int i = 0; i < 11; i++) {
+        file << "," << DCheckLosePreTurnScore[i];
+    }
+    file << '\n';
+
+    file << "DCheckWinPostTurn," << DCheckWinPostTurn << '\n';
+    file << "DCheckLosePostTurn," << DCheckLosePostTurn << '\n';
+
+    file << "DCheckWinPostTurnScore";
+    for (int i = 0; i < 11; i++) {
+        file << "," << DCheckWinPostTurnScore[i];
+    }
+    file << '\n';
+
+    file << "DCheckLosePostTurnScore";
+    for (int i = 0; i < 11; i++) {
+        file << "," << DCheckLosePostTurnScore[i];
+    }
+    file << '\n';
+
+    file << "DLastWin," << DLastWin << '\n';
+    file << "DLastLose," << DLastLose << '\n';
+
+    file << "DCheckWinAgainstSizePreTurn";
+    for (int i = 0; i < 6; i++) {
+        file << "," << DCheckWinAgainstSizePreTurn[i];
+    }
+    file << '\n';
+
+    file << "DCheckLoseAgainstSizePreTurn";
+    for (int i = 0; i < 6; i++) {
+        file << "," << DCheckLoseAgainstSizePreTurn[i];
+    }
+    file << '\n';
+
+    file << "DCheckWinAgainstSizePostTurn";
+    for (int i = 0; i < 6; i++) {
+        file << "," << DCheckWinAgainstSizePostTurn[i];
+    }
+    file << '\n';
+
+    file << "DCheckLoseAgainstSizePostTurn";
+    for (int i = 0; i < 6; i++) {
+        file << "," << DCheckLoseAgainstSizePostTurn[i];
+    }
+    file << '\n';
+    file << "XBCount," << XBCount << '\n';
+    file << "PNLCount," << PNLCount << '\n';
+    file << "DNLCount," << DNLCount << '\n';
+    file << "XBDrawCount," << XBDrawCount << '\n';
+    file << "PNLWinCount," << PNLWinCount << '\n';
+    file << "DNLWinCount," << DNLWinCount << '\n';
+    file << "NLDrawCount," << NLDrawCount << '\n';
+    file << "Expected Value," << EVXD << '\n';
+    file.close();
 }
 

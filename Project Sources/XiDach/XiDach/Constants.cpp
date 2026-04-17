@@ -39,3 +39,19 @@ string getRankName(int x) {
 
     return to_string(rank);
 }
+
+string getFileName(const string& base, const string& csv) {
+    string filename = base + csv;
+    int counter = 1;
+
+    while (true) {
+        ifstream file(filename);
+        if (!file.good()) {
+            return filename; // file does NOT exist
+        }
+
+        file.close();
+        filename = base + "_(" + std::to_string(counter) + ")" + csv;
+        counter++;
+    }
+}

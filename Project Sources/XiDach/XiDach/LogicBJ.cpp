@@ -85,6 +85,7 @@ int playerWantsBJ(Hand& p, Hand& d) { //Modify this to change the strategy of pl
     //Note that optimal strategy MIGHT stand when very low score like 12-15
     if (p.getScore() < 16) return HIT;
     if (p.isSoft) return HIT;
+    if (!p.isSoft && p.getScore() == 16 && d.getFaceup() == 10) return SURRENDER;
     if (p.getScore() == 16) {
         if (d.getFaceup() == 1) return HIT;
     }
@@ -158,6 +159,10 @@ void ProcessSimulationBJ(Match& match, Dealer& dealer, StatBJ& stat) {
                     h.setDouble();
                     break;
                 }
+                if (action == SURRENDER) {
+                    resolved = true;
+                    stat.upSurrenderCount();
+                }
                 break;
             }
 
@@ -173,7 +178,7 @@ void ProcessSimulationBJ(Match& match, Dealer& dealer, StatBJ& stat) {
     //cout << '\n';
 }
 
-void SimulationBJ() {
+void SimulationBJ(ofstream& file) {
     cout << "How many players?" << '\n';
     int n; cin >> n;
     cout << "How many Matches?" << '\n';
@@ -198,7 +203,9 @@ void SimulationBJ() {
         ProcessSimulationBJ(match, match.dealer, stat);
     }
     cout << '\n';
+    stat.setEVBJ();
     stat.printStat();
+    stat.exportStat(file);
 }
 
 bool DealerWantsBJ(Match& match, Dealer& d) {

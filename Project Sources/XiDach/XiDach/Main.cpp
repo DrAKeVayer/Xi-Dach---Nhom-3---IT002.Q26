@@ -11,6 +11,12 @@ int main() {
     initRankTable(rankTable);
     initRankName(rankName);
 
+    string base = "stats";
+    string csv = ".csv";
+    string filename = getFileName(base, csv);
+
+    ofstream file(filename);
+
     int choice;
 
     cout << R"(
@@ -28,7 +34,7 @@ int main() {
         )";
         cin >> choice;
 
-        if (choice == 1) SimulationBJ();
+        if (choice == 1) SimulationBJ(file);
         else if (choice == 2) PlayBJ();
         return 0;
     }
@@ -41,7 +47,7 @@ int main() {
         )";
         cin >> choice;
 
-        if (choice == 1) SimulationXD();
+        if (choice == 1) SimulationXD(file);
         //else if (choice == 2) PlayXD();
         return 0;
     }

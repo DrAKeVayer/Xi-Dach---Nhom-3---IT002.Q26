@@ -15,7 +15,7 @@ bool playerDouble(Hand& p, Hand& d);
 
 void ProcessSimulationBJ(Match& match, Dealer& dealer, StatBJ& stat);
 
-void SimulationBJ();
+void SimulationBJ(ofstream& file);
 
 bool DealerWantsBJ(Match& match, Dealer& d);
 

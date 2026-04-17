@@ -250,7 +250,7 @@ void ProcessSimulationXD(Match& match, Dealer& dealer, StatXD& stat) {
     //cout << '\n';
 }
 
-void SimulationXD() {
+void SimulationXD(ofstream& file) {
     cout << "How many players?" << '\n';
     int n; cin >> n;
     cout << "How many Matches?" << '\n';
@@ -278,5 +278,7 @@ void SimulationXD() {
         ProcessSimulationXD(match, match.dealer, stat);
     }
     cout << '\n';
+    stat.setEVXD();
     stat.printStat();
+    stat.exportStat(file);
 }

@@ -28,7 +28,10 @@ void Hand::calculateScore() {
         isSoft = true;
         score += 10;
         softScore = score;
-        if (hand.size() == 2) first2SoftScore = score;
+        if (hand.size() == 2) {
+            first2SoftScore = score;
+            wasSoft = true;
+        }
     }
 
     if (!isSoft && hand.size() == 2) first2HardScore = score;
@@ -62,6 +65,10 @@ void Hand::setWon() {
 
 void Hand::setLost() {
     SplitLost = true;
+}
+
+void Hand::setDouble() {
+    isDoubled = true;
 }
 
 HandType Hand::getHandType() {
@@ -312,16 +319,30 @@ void StatBJ::upSplitWin() { SplitWin++; }
 void StatBJ::upPSplitWinRank(int i) { PSplitWinRank[i]++; }
 void StatBJ::upPSplitWinVSup(int i) { PSplitWinVSup[i]++; }
 void StatBJ::upPSplitLoseVSup(int i) { PSplitLoseVSup[i]++; }
+void StatBJ::downPBJWin() { PBJWin--; }
 void StatBJ::upInsureCount() { InsureCount++; }
 void StatBJ::upInsureWinCount() { InsureWinCount++; }
 void StatBJ::upInsureLoseCount() { InsureLoseCount++; }
+void StatBJ::upDoubleCount() { DoubleCount++; }
+void StatBJ::upDoubleWinCount() { DoubleWinCount++; }
+void StatBJ::upDoubleLoseCount() { DoubleLoseCount++; }
+void StatBJ::upDoubleWinHardScore(int i) { DoubleWinHardScore[i]++; }
+void StatBJ::upDoubleWinSoftScore(int i) { DoubleWinSoftScore[i]++; }
+void StatBJ::upDoubleLoseHardScore(int i) { DoubleLoseHardScore[i]++; }
+void StatBJ::upDoubleLoseSoftScore(int i) { DoubleLoseSoftScore[i]++; }
+void StatBJ::upDoubleVSup(int i) { DoubleVSup[i]++; }
+void StatBJ::upDoubleWinVSup(int i) { DoubleWinVSup[i]++; }
+void StatBJ::upDoubleLoseVSup(int i) { DoubleLoseVSup[i]++; }
+
+
 void StatBJ::setEVBJ() {
-    double nomi = (PWin - PBJWin) + 1.5 * PBJWin - PLose;
+    double nomi = (PWin - PBJWin) + 1.5*PBJWin - PLose + InsureWinCount - 0.5*InsureLoseCount;
 }
 
 void StatBJ::printStat() {
     Stat::printStat();
     cout << '\n' << "BLACKJACK SPECIFIC STATS: " << '\n';
+    cout << '\n' << "Player wins against dealer up card ranked 1 to 10: " << '\n';
     for (int i = 1; i < 11; i++) cout << PWinVSup[i] << " - ";
     cout << '\n' << "Player loses against dealer up card ranked 1 to 10: " << '\n';
     for (int i = 1; i < 11; i++) cout << PLoseVSup[i] << " - ";
@@ -336,6 +357,23 @@ void StatBJ::printStat() {
     cout << '\n' << "Player takes insurance " << InsureCount << " times total";
     cout << '\n' << "Player Success with insurance " << InsureWinCount << " times total";
     cout << '\n' << "Player Fail with insurance " << InsureLoseCount << " times total";
+
+    cout << '\n' << "Player double down " << DoubleCount << " hands total";
+    cout << '\n' << "Player wins with double down " << DoubleWinCount << " hands total";
+    cout << '\n' << "With Soft score at that time from 12 to 21 "; //Soft 12 (A + A) mean can try doubling to get 21 (A + A + 9)
+    for (int i = 12; i < 22; i++) cout << DoubleWinSoftScore[i] << " - ";
+    cout << '\n' << "With Hard score at that time from 6 to 21 "; //Hard < 5 (2 + 3) can never reach 16 with 1 more card
+    for (int i = 12; i < 22; i++) cout << DoubleWinHardScore[i] << " - ";
+    cout << '\n' << "Against Dealer's up card ranked 1 to 10: ";
+    for (int i = 1; i < 11; i++) cout << DoubleWinVSup[i] << " - ";
+
+    cout << '\n' << "Player loses with double down " << DoubleLoseCount << " hands total";
+    cout << '\n' << "With Soft score at that time from 12 to 21 "; //Soft 12 (A + A) mean can try doubling to get 21 (A + A + 9)
+    for (int i = 12; i < 22; i++) cout << DoubleLoseSoftScore[i] << " - ";
+    cout << '\n' << "With Hard score at that time from 6 to 21 "; //Hard < 5 (2 + 3) can never reach 16 with 1 more card
+    for (int i = 12; i < 22; i++) cout << DoubleLoseHardScore[i] << " - ";
+    cout << '\n' << "Against Dealer's up card ranked 1 to 10: ";
+    for (int i = 1; i < 11; i++) cout << DoubleLoseVSup[i] << " - ";
 }
 
 void StatXD::upTotalCheck() { TotalCheck++; }

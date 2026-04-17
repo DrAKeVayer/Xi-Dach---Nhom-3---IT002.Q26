@@ -11,6 +11,8 @@ int playerWantsBJ(Hand& p, Hand& d);
 
 bool playerInsure(Hand& p, Hand& d);
 
+bool playerDouble(Hand& p, Hand& d);
+
 void ProcessSimulationBJ(Match& match, Dealer& dealer, StatBJ& stat);
 
 void SimulationBJ();

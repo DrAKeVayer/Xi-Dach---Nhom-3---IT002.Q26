@@ -16,6 +16,8 @@ public:
     int first2SoftScore = 0;
     int first2HardScore = 0;
     bool resolved = false;
+    bool isDoubled = false;
+    bool wasSoft = false;
 
     Hand();
 
@@ -26,6 +28,7 @@ public:
     int getFaceup();
     void setWon();
     void setLost();
+    void setDouble();
     HandType getHandType();
     int getScore() const;
     int getSoftScore() const;
@@ -61,8 +64,6 @@ protected:
     int cardIdx = 0;
     bool Has3 = false;
     bool Has4 = false;
-    int NValue = 0;
-    int DValue = 0;
 public:
     vector<Player> players;
     Dealer dealer;
@@ -160,9 +161,21 @@ protected:
     int PSplitWinRank[11] = { 0 };
     int PSplitWinVSup[11] = { 0 };
     int PSplitLoseVSup[11] = { 0 };
+
     int InsureCount = 0;
     int InsureWinCount = 0;
     int InsureLoseCount = 0;
+
+    int DoubleCount = 0;
+    int DoubleWinCount = 0;
+    int DoubleLoseCount = 0;
+    int DoubleWinHardScore[22] = { 0 };
+    int DoubleWinSoftScore[22] = { 0 };
+    int DoubleLoseHardScore[22] = { 0 };
+    int DoubleLoseSoftScore[22] = { 0 };
+    int DoubleVSup[11] = { 0 };
+    int DoubleWinVSup[11] = { 0 };
+    int DoubleLoseVSup[11] = { 0 };
 
     double EVBJ;
 
@@ -174,10 +187,23 @@ public:
     void upPSplitWinRank(int i);
     void upPSplitWinVSup(int i);
     void upPSplitLoseVSup(int i);
+    void downPBJWin();
     void setEVBJ();
     void upInsureCount();
     void upInsureWinCount();
     void upInsureLoseCount();
+
+    void upDoubleCount();
+    void upDoubleWinCount();
+    void upDoubleLoseCount();
+    void upDoubleWinHardScore(int i);
+    void upDoubleWinSoftScore(int i);
+    void upDoubleLoseHardScore(int i);
+    void upDoubleLoseSoftScore(int i);
+    void upDoubleVSup(int i);
+    void upDoubleWinVSup(int i);
+    void upDoubleLoseVSup(int i);
+
 
     void printStat() override;
 };

@@ -35,5 +35,6 @@ enum Action {
     STAND = 0,
     XET3 = 2,
     XET4 = 3,
+    SPLIT = 4,
+    DDOUBLE = 5
 };
-

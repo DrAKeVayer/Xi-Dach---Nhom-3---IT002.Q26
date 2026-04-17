@@ -11,6 +11,13 @@ void doResultBJ(Hand& p, Hand& d, int& result, StatBJ& stat) {
         stat.upPWin();
         if (p.getHandType() == XIDACH) stat.upPBJWin(); //wins due to BJ won't count for any stat below
         else {
+            if (p.isDoubled) {
+                stat.upDoubleWinCount();
+                stat.upDoubleVSup(d.getFaceup());
+                stat.upDoubleWinVSup(d.getFaceup());
+                if (p.wasSoft) stat.upDoubleWinSoftScore(p.first2SoftScore);
+                else stat.upDoubleWinHardScore(p.first2HardScore);
+            }
             stat.upPWinVSup(d.getFaceup());
             if (p.getScore() == 16) stat.upPWin16();
             if (p.first2HardScore > 0) stat.upPWinFirst2Hard(p.first2HardScore);
@@ -23,6 +30,7 @@ void doResultBJ(Hand& p, Hand& d, int& result, StatBJ& stat) {
             else stat.upPStandedWin();
             stat.upPWinAfterHitTime(p.hand.size() - 2);
             if (p.SplitWon) {
+                if (p.getHandType() == XIDACH) stat.downPBJWin();
                 stat.upSplitWin();
                 stat.upPSplitWinRank(rankTable[p.hand[0]]);
                 stat.upPSplitWinVSup(d.getFaceup());
@@ -32,6 +40,13 @@ void doResultBJ(Hand& p, Hand& d, int& result, StatBJ& stat) {
     else if (result == -1) {
         //cout << '\n' << "Dealer wins against player's hand: ";
         //p.printHand();
+        if (p.isDoubled) {
+            stat.upDoubleLoseCount();
+            stat.upDoubleVSup(d.getFaceup());
+            stat.upDoubleLoseVSup(d.getFaceup());
+            if (p.wasSoft) stat.upDoubleLoseSoftScore(p.first2SoftScore);
+            else stat.upDoubleLoseHardScore(p.first2HardScore);
+        }
         stat.upPLose();
         stat.upDWin();
         stat.upPLoseVSup(d.getFaceup());
@@ -55,20 +70,25 @@ void doResultBJ(Hand& p, Hand& d, int& result, StatBJ& stat) {
 }
 
 int playerWantsBJ(Hand& p, Hand& d) { //Modify this to change the strategy of players. Note that dealer always stand on 17 or higher
-    /*0: stand
-      1: hit
-      2: split
-      3: double down
-    */
+    //Use getFaceUp() function to get the value of Splitable cards in hand
     p.calculateScore();
-    if (p.getScore() >= 21) return 0; //best possible score
-    if (p.isSplitable) return 2;
-    if (p.getScore() < 16) return 1;
-    if (p.isSoft) return 1;
-    if (p.getScore() == 16) {
-        if (d.getFaceup() == 1) return 1;
+    if (p.getScore() >= 21) return STAND; //best possible score
+    //Add Split conditions here
+    if (p.isSplitable) return SPLIT;
+    //If hand should no longer Split, consider Doubling now
+    if (p.isSoft && p.getSoftScore() >= 12) { 
+        if (d.getFaceup() <= 5) return DDOUBLE; //2 'D's
     }
-    return 0;
+    else if (!p.isSoft && p.getScore() > 10) {
+        if (d.getFaceup() <= 5) return DDOUBLE;
+    }
+    //Note that optimal strategy MIGHT stand when very low score like 12-15
+    if (p.getScore() < 16) return HIT;
+    if (p.isSoft) return HIT;
+    if (p.getScore() == 16) {
+        if (d.getFaceup() == 1) return HIT;
+    }
+    return STAND;
 }
 
 bool playerInsure(Hand& p, Hand& d) {
@@ -123,14 +143,20 @@ void ProcessSimulationBJ(Match& match, Dealer& dealer, StatBJ& stat) {
                 if (h.isBust || action == 0) {
                     break;
                 }
-                if (action == 2) { // SPLIT
+                if (action == SPLIT) {
                     match.splitTo(p, i);
                     stat.upTotalSplit(1);
                     continue;
                 }
-                if (action == 1) { // HIT
+                if (action == HIT) {
                     match.dealCardToHand(h);
                     continue;
+                }
+                if (action == DDOUBLE) {
+                    match.dealCardToHand(h);
+                    stat.upDoubleCount();
+                    h.setDouble();
+                    break;
                 }
                 break;
             }

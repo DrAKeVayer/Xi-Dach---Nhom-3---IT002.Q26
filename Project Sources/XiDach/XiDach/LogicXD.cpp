@@ -33,7 +33,9 @@ void doResultXD(Hand& p, Hand& d, int& result, StatXD& stat) {
         stat.upPLoseAfterHitTime(p.hand.size() - 2);
         if (d.getHandType() == XIBANG) stat.upXBCount();
         if (p.first2HardScore > 0) stat.upPLoseFirst2Hard(p.first2HardScore);
-        else stat.upPLoseFirst2Soft(p.first2SoftScore);
+        else if (p.getHandType() != XIBANG) {
+            stat.upPLoseFirst2Soft(p.first2SoftScore);
+        }
         if (d.getHandType() == XIDACH) stat.upDBJWin();
         if (p.getScore() == 16) stat.upPLose16();
         stat.upPTotalHit(p.hand.size() - 2);
@@ -126,6 +128,7 @@ void ProcessSimulationXD(Match& match, Dealer& dealer, StatXD& stat) {
                 if (p.hands[0].getHandType() == NGULINH) stat.upPNLCount();
                 break;
             }
+            if (p.hands[0].getHandType() == XIDACH || p.hands[0].getHandType() == XIBANG) break;
             int action = playerWantsXD(p.hands[0], d);
             if (action == 1) {
                 match.dealCardToHand(p.hands[0]);

@@ -1,71 +1,50 @@
-# Xi-Dach---Nhom-3---IT002.Q26
+# Xi Dach - Nhom 3 - IT002.Q26 Project
 
-classDiagram
-    class Hand {
-        +vector~int~ hand
-        +int score
-        +bool isBust
-        +bool hasAce
-        +bool isSoft
-        +bool isSplitable
-        +calculateScore() void
-        +receiveCard(int x) void
-        +getHandType() HandType
-        +getScore() int
-        +printHand() void
-    }
+## I. Compilation annd run guide:
 
-    class Player {
-        +vector~Hand~ hands
-        +resetPlayer() void
-        +splitHand(int x) void
-        +printHand() void
-    }
+### 1. Install Visual Studio
 
-    class Dealer {
-        +printDealerFirstHand() void
-        +printDealerHand() void
-    }
+Download and install Visual Studio.
 
-    class Match {
-        -vector~int~ deck
-        -int cardIdx
-        +vector~Player~ players
-        +Dealer dealer
-        +shuffle() void
-        +drawCard() int
-        +deal2Card() void
-        +splitTo(Player& p, int x) void
-    }
+During installation, make sure to select:
 
-    class Stat {
-        #int PWin
-        #int DWin
-        #int PBJWin
-        ....
-        +upPWin() void
-        +upDWin() void
-        +printStat() void
-        ....
-    }
+* **Desktop development with C++**
 
-    class HandType <<enumeration>> {
-        THUONG
-        NGULINH
-        XIDACH
-        XIBANG
-    }
+---
 
-    class Action <<enumeration>> {
-        HIT
-        STAND
-        SPLIT
-        DOUBLED
-    }
+### 2. Open the Project
 
-    Player "1" *-- "1..*" Hand : Composition (Has-a)
-    Dealer --|> Player : Inheritance (Is-a)
-    Match "1" o-- "1..*" Player : Aggregation
-    Match "1" o-- "1" Dealer : Aggregation
-    Match ..> Stat : Updates
-    Hand ..> HandType : Returns
+1. Navigate to the repository folder
+2. Open the solution file:
+
+   ```
+   *.sln or *.slnx
+   ```
+3. The project will load in Visual Studio
+
+---
+
+### 3. Configure Build Settings
+
+At the top toolbar:
+
+* **Configuration:** Change from `Debug` to `Release` for better speed
+* **Platform:** `x64` (or `x86` if needed)
+
+---
+
+### 4. Build the Project
+
+* Press F7
+
+* Make sure there are no errors in the Output window.
+
+---
+
+### 5. Run the Program
+
+```
+Ctrl + F5
+```
+## II. Class Diagram
+* (under construction)

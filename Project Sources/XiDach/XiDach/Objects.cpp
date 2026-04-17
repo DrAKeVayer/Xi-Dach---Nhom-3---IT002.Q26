@@ -18,6 +18,7 @@ void Hand::calculateScore() {
     isSplitable = false;
     score = 0;
     softScore = 0;
+
     for (auto c : hand) {
         int r = rankTable[c];
         if (r == 1) hasAce = true;

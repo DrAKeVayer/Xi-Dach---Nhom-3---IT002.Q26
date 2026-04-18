@@ -284,10 +284,10 @@ void Stat::printStat() {
     cout << "GENERIC STATS: " << '\n';
     cout << "Player wins " << PWin << " hands" << '\n';
     cout << "Dealer wins " << DWin << " hands" << '\n';
-    cout << "Draw " << Draw << " hands" << '\n';
+    cout << "Tie " << Draw << " hands" << '\n';
     cout << "Player wins with BlackJack " << PBJWin << " hands" << '\n';
     cout << "Dealer wins with BlackJack " << DBJWin << " hands" << '\n';
-    cout << "Draw with BlackJack " << BJDraw << " hands" << '\n';
+    cout << "Tie with BlackJack " << BJDraw << " hands" << '\n';
     cout << "Player wins on 16 " << PWin16 << " hands" << '\n';
     cout << "Player loses on 16 " << PLose16 << " hands" << '\n';
     cout << "Player wins and Dealer busts " << PWinDBust << " hands" << '\n';
@@ -318,18 +318,13 @@ void Stat::exportStat(ofstream& file) {
     file << "PWin," << PWin << '\n';
     file << "PLose," << PLose << '\n';
     file << "DWin," << DWin << '\n';
-    file << "Draw," << Draw << '\n';
+    file << "Tie," << Draw << '\n';
     file << "PBJWin," << PBJWin << '\n';
     file << "DBJWin," << DBJWin << '\n';
-    file << "BJDraw," << BJDraw << '\n';
+    file << "BJTie," << BJDraw << '\n';
     file << "PWin16," << PWin16 << '\n';
     file << "PLose16," << PLose16 << '\n';
     file << "PWinDBust," << PWinDBust << '\n';
-    file << "PWinSoft";
-    for (int i = 0; i < 22; i++) {
-        file << "," << PWinSoft[i];
-    }
-    file << '\n';
     file << "PWinSoft";
     for (int i = 0; i < 22; i++) {
         file << "," << PWinSoft[i];
@@ -384,7 +379,7 @@ void Stat::exportStat(ofstream& file) {
     file << '\n';
 
     file << "DBustCount," << DBustCount << '\n';
-    file << "BustDraw," << BustDraw << '\n';
+    file << "BustTie," << BustDraw << '\n';
 }
 
 void StatBJ::upPWinVSup(int i) { PWinVSup[i]++; }
@@ -541,8 +536,8 @@ void StatBJ::exportStat(ofstream& file) {
     file << '\n';
 
     file << "SurrenderCount," << SurrenderCount << '\n';
-    file << "SurrenderSuccess," << SurrenderSuccess << '\n';
     file << "Expected Value," << EVBJ << '\n';
+    file << "Number,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21\n";
     file.close();
 }
 
@@ -627,13 +622,13 @@ void StatXD::exportStat(ofstream& file) {
     file << "DCheckLosePreTurn," << DCheckLosePreTurn << '\n';
 
     file << "DCheckWinPreTurnScore";
-    for (int i = 0; i < 11; i++) {
+    for (int i = 0; i < 22; i++) {
         file << "," << DCheckWinPreTurnScore[i];
     }
     file << '\n';
 
     file << "DCheckLosePreTurnScore";
-    for (int i = 0; i < 11; i++) {
+    for (int i = 0; i < 22; i++) {
         file << "," << DCheckLosePreTurnScore[i];
     }
     file << '\n';
@@ -642,13 +637,13 @@ void StatXD::exportStat(ofstream& file) {
     file << "DCheckLosePostTurn," << DCheckLosePostTurn << '\n';
 
     file << "DCheckWinPostTurnScore";
-    for (int i = 0; i < 11; i++) {
+    for (int i = 0; i < 22; i++) {
         file << "," << DCheckWinPostTurnScore[i];
     }
     file << '\n';
 
     file << "DCheckLosePostTurnScore";
-    for (int i = 0; i < 11; i++) {
+    for (int i = 0; i < 22; i++) {
         file << "," << DCheckLosePostTurnScore[i];
     }
     file << '\n';
@@ -687,6 +682,7 @@ void StatXD::exportStat(ofstream& file) {
     file << "DNLWinCount," << DNLWinCount << '\n';
     file << "NLDrawCount," << NLDrawCount << '\n';
     file << "Expected Value," << EVXD << '\n';
+    file << "Number,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21\n";
     file.close();
 }
 

@@ -179,7 +179,6 @@ protected:
     int DoubleLoseVSup[11] = { 0 };
 
     int SurrenderCount = 0;
-    int SurrenderSuccess = 0; //if you would have lost trying to play that hand
 
     double EVBJ;
 
@@ -221,12 +220,12 @@ protected:
     int DCheckLose = 0;
     int DCheckWinPreTurn = 0; //track all wins when checking pre-dealer-turn
     int DCheckLosePreTurn = 0;
-    int DCheckWinPreTurnScore[11] = { 0 }; //track dealer's score for all wins when checking pre-dealer-turn
-    int DCheckLosePreTurnScore[11] = { 0 };
+    int DCheckWinPreTurnScore[22] = { 0 }; //track dealer's score for all wins when checking pre-dealer-turn
+    int DCheckLosePreTurnScore[22] = { 0 };
     int DCheckWinPostTurn = 0; //exclude XETALL
     int DCheckLosePostTurn = 0; //exclude Dealer Bust
-    int DCheckWinPostTurnScore[11] = { 0 }; //track dealer's score for all wins when checking at dealer's turn
-    int DCheckLosePostTurnScore[11] = { 0 };
+    int DCheckWinPostTurnScore[22] = { 0 }; //track dealer's score for all wins when checking at dealer's turn
+    int DCheckLosePostTurnScore[22] = { 0 };
     int DLastWin = 0; //track wins at XETALL
     int DLastLose = 0;
     int DCheckWinAgainstSizePreTurn[6] = { 0 };

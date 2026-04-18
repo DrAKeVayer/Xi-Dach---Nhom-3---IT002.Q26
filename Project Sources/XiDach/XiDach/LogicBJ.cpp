@@ -16,7 +16,13 @@ void doResultBJ(Hand& p, Hand& d, int& result, StatBJ& stat) {
                 stat.upDoubleVSup(d.getFaceup());
                 stat.upDoubleWinVSup(d.getFaceup());
                 if (p.wasSoft) stat.upDoubleWinSoftScore(p.first2SoftScore);
-                else stat.upDoubleWinHardScore(p.first2HardScore);
+                else {
+                    stat.upDoubleWinHardScore(p.first2HardScore);
+                    if (p.first2HardScore < 10) {
+                        p.printHand();
+                        cout << '\n';
+                    }
+                }
             }
             stat.upPWinVSup(d.getFaceup());
             if (p.getScore() == 16) stat.upPWin16();
@@ -76,10 +82,10 @@ int playerWantsBJ(Hand& p, Hand& d) { //Modify this to change the strategy of pl
     //Add Split conditions here
     if (p.isSplitable) return SPLIT;
     //If hand should no longer Split, consider Doubling now
-    if (p.isSoft && p.getSoftScore() >= 12) { 
+    if (p.isSoft && p.getScore() >= 12 && p.hand.size() == 2) { 
         if (d.getFaceup() <= 5) return DDOUBLE; //2 'D's
     }
-    else if (!p.isSoft && p.getScore() > 10) {
+    else if (!p.isSoft && p.getScore() >= 10 && p.hand.size() == 2) {
         if (d.getFaceup() <= 5) return DDOUBLE;
     }
     //Note that optimal strategy MIGHT stand when very low score like 12-15

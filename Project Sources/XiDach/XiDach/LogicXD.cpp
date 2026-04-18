@@ -18,7 +18,9 @@ void doResultXD(Hand& p, Hand& d, int& result, StatXD& stat) {
             else stat.upPWinFirst2Soft(p.first2SoftScore);
             if (d.isBust) stat.upPWinDBust();
             if (p.isSoft) stat.upPWinSoft(p.getScore());
-            else stat.upPWinHard(p.getScore());
+            else if (p.getHandType() != NGULINH) {
+                stat.upPWinHard(p.getScore());
+            }
             stat.upPTotalHit(p.hand.size() - 2);
             if (p.hand.size() - 2) stat.upPHitWin();
             else stat.upPStandedWin();
@@ -181,10 +183,12 @@ void ProcessSimulationXD(Match& match, Dealer& dealer, StatXD& stat) {
             //cout << '\n';
             d.calculateScore();
             if (d.isBust) {
+                stat.upDBustCount();
                 //cout << "Dealer Busted!" << '\n';
                 for (auto& p : match.players) {
                     if (!p.hands[0].resolved) {
                         int result = compareHands(p.hands[0], d);
+                        if (p.hands[0].isBust) stat.upBustDraw();
                         doResultXD(p.hands[0], d, result, stat);
                     }
                 }
@@ -227,7 +231,6 @@ void ProcessSimulationXD(Match& match, Dealer& dealer, StatXD& stat) {
         //cout << "Dealer's final hand: ";
         //d.printHand();
         if (d.getHandType() == NGULINH) stat.upDNLCount();
-        if (d.isBust) stat.upDBustCount();
         for (auto& p : match.players) {
             if (!p.hands[0].resolved) {
                 //cout << '\n' << "Dealer checks this player hand: ";
@@ -243,7 +246,6 @@ void ProcessSimulationXD(Match& match, Dealer& dealer, StatXD& stat) {
                 }
                 else if (result == 0) {
                     if (d.getHandType() == NGULINH) stat.upNLDrawCount();
-                    if (d.isBust && p.hands[0].isBust) stat.upBustDraw();
                 }
                 doResultXD(p.hands[0], d, result, stat);
             }

@@ -24,6 +24,8 @@ void doResultBJ(Hand& p, Hand& d, int& result, StatBJ& stat) {
                     }
                 }
             }
+            stat.upDLoseAgainstPScore(p.getScore());
+            stat.upDLoseAgainstPFirst2Score(p.first2Score);
             stat.upPWinVSup(d.getFaceup());
             if (p.getScore() == 16) stat.upPWin16();
             if (p.first2HardScore > 0) stat.upPWinFirst2Hard(p.first2HardScore);
@@ -53,8 +55,13 @@ void doResultBJ(Hand& p, Hand& d, int& result, StatBJ& stat) {
             if (p.wasSoft) stat.upDoubleLoseSoftScore(p.first2SoftScore);
             else stat.upDoubleLoseHardScore(p.first2HardScore);
         }
+        if (p.isBust) {
+            stat.upPBust();
+        }
         stat.upPLose();
         stat.upDWin();
+        stat.upDWinAgainstPScore(p.getScore());
+        stat.upDWinAgainstPFirst2Score(p.first2Score);
         stat.upPLoseVSup(d.getFaceup());
         stat.upPLoseAfterHitTime(p.hand.size() - 2);
         if (p.first2HardScore > 0) stat.upPLoseFirst2Hard(p.first2HardScore);
@@ -63,7 +70,9 @@ void doResultBJ(Hand& p, Hand& d, int& result, StatBJ& stat) {
         if (p.getScore() == 16) stat.upPLose16();
         stat.upPTotalHit(p.hand.size() - 2);
         if (p.SplitLost) {
+            stat.upSplitLose();
             stat.upPSplitLoseVSup(d.getFaceup());
+            stat.upPSplitLoseRank(rankTable[p.hand[0]]);
         }
     }
     else {
@@ -101,7 +110,6 @@ int playerWantsBJ(Hand& p, Hand& d) { //Modify this to change the strategy of pl
 bool playerInsure(Hand& p, Hand& d) {
     //In stardard strategy, there's no way other than card counting that makes insurance an advised choice
     //The only thing that makes player lose less is by having no 10-value in your hand
-    if (rankTable[p.hand[0]] != 10 && rankTable[p.hand[1]] != 10) return true;
     return false; //or true, if you want to see how it crashes EV down hehe
 }
 

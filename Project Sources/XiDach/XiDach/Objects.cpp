@@ -31,11 +31,15 @@ void Hand::calculateScore() {
         softScore = score;
         if (hand.size() == 2) {
             first2SoftScore = score;
+            first2Score = score;
             wasSoft = true;
         }
     }
 
-    if (!isSoft && hand.size() == 2) first2HardScore = score;
+    if (!isSoft && hand.size() == 2) {
+        first2HardScore = score;
+        first2Score = score;
+    }
 
     if (hand.size() == 2) {
         if (getRankName(hand[0]) == getRankName(hand[1])) isSplitable = true;
@@ -266,6 +270,11 @@ void Stat::upBJDraw() { BJDraw++; }
 void Stat::upPTotalHit(int x) { PTotalHit += x; }
 void Stat::upPHitWin() { PHitWin++; }
 void Stat::upPStandedWin() { PStandedWin++; }
+void Stat::upPBust() { PBust++; }
+void Stat::upDLoseAgainstPScore(int i) { DLoseAgainstPScore[i]++; }
+void Stat::upDWinAgainstPScore(int i) { DWinAgainstPScore[i]++; }
+void Stat::upDLoseAgainstPFirst2Score(int i) { DLoseAgainstPFirst2Score[i]++; }
+void Stat::upDWinAgainstPFirst2Score(int i) { DWinAgainstPFirst2Score[i]++; }
 
 void Stat::upPWinSoft(int i) { PWinSoft[i]++; }
 void Stat::upPWinHard(int i) { PWinHard[i]++; }
@@ -291,6 +300,16 @@ void Stat::printStat() {
     cout << "Player wins on 16 " << PWin16 << " hands" << '\n';
     cout << "Player loses on 16 " << PLose16 << " hands" << '\n';
     cout << "Player wins and Dealer busts " << PWinDBust << " hands" << '\n';
+    cout << "Player busts " << PBust << " hands" << '\n';
+    cout << "Dealer wins against Player's final score 10 to 22:" << '\n';
+    for (int i = 10; i < 22; i++) cout << DWinAgainstPScore[i] << " - ";
+    cout << "Dealer loses against Player's final score 10 to 22:" << '\n';
+    for (int i = 10; i < 22; i++) cout << DWinAgainstPScore[i] << " - ";
+    cout << "Dealer wins against Player's first 2 card score 10 to 22:" << '\n';
+    for (int i = 2; i < 22; i++) cout << DWinAgainstPScore[i] << " - ";
+    cout << "Dealer loses against Player's first 2 card score 10 to 22:" << '\n';
+    for (int i = 2; i < 22; i++) cout << DWinAgainstPScore[i] << " - ";
+
     cout << "Player wins with soft score from 16 to 21: " << '\n';
     for (int i = 16; i < 22; i++) cout << PWinSoft[i] << " - ";
     cout << '\n' << "Player wins with hard score from 16 to 21: " << '\n';
@@ -325,6 +344,30 @@ void Stat::exportStat(ofstream& file) {
     file << "PWin16," << PWin16 << '\n';
     file << "PLose16," << PLose16 << '\n';
     file << "PWinDBust," << PWinDBust << '\n';
+    file << "PBust," << PBust << '\n';
+    file << "DLoseAgainstPScore";
+    for (int i = 0; i < 32; i++) {
+        file << "," << DLoseAgainstPScore[i];
+    }
+    file << '\n';
+
+    file << "DWinAgainstPScore";
+    for (int i = 0; i < 32; i++) {
+        file << "," << DWinAgainstPScore[i];
+    }
+    file << '\n';
+
+    file << "DLoseAgainstPFirst2Score";
+    for (int i = 0; i < 22; i++) {
+        file << "," << DLoseAgainstPFirst2Score[i];
+    }
+    file << '\n';
+
+    file << "DWinAgainstPFirst2Score";
+    for (int i = 0; i < 22; i++) {
+        file << "," << DWinAgainstPFirst2Score[i];
+    }
+    file << '\n';
     file << "PWinSoft";
     for (int i = 0; i < 22; i++) {
         file << "," << PWinSoft[i];
@@ -387,6 +430,10 @@ void StatBJ::upPLoseVSup(int i) { PLoseVSup[i]++; }
 void StatBJ::upTotalSplit(int x) { TotalSplit += x; }
 void StatBJ::upSplitWin() { SplitWin++; }
 void StatBJ::upPSplitWinRank(int i) { PSplitWinRank[i]++; }
+
+void StatBJ::upSplitLose() { SplitLose++; }
+void StatBJ::upPSplitLoseRank(int i) { PSplitLoseRank[i]++; }
+
 void StatBJ::upPSplitWinVSup(int i) { PSplitWinVSup[i]++; }
 void StatBJ::upPSplitLoseVSup(int i) { PSplitLoseVSup[i]++; }
 void StatBJ::downPBJWin() { PBJWin--; }
@@ -420,8 +467,11 @@ void StatBJ::printStat() {
     for (int i = 1; i < 11; i++) cout << PLoseVSup[i] << " - ";
     cout << '\n' << "Player split " << TotalSplit << " hands";
     cout << '\n' << "Player wins after split " << SplitWin << " hands";
+    cout << '\n' << "Player loses after split " << SplitLose << " hands";
     cout << '\n' << "Player wins after split rank from 1 to 10: " << '\n';
     for (int i = 1; i < 11; i++) cout << PSplitWinRank[i] << " - ";
+    cout << '\n' << "Player loses after split rank from 1 to 10: " << '\n';
+    for (int i = 1; i < 11; i++) cout << PSplitLoseRank[i] << " - ";
     cout << '\n' << "Player wins after split against dealer up card ranked 1 to 10: " << '\n';
     for (int i = 1; i < 11; i++) cout << PSplitWinVSup[i] << " - ";
     cout << '\n' << "Player loses after split against dealer up card ranked 1 to 10: " << '\n';
@@ -466,10 +516,16 @@ void StatBJ::exportStat(ofstream& file) {
 
     file << "TotalSplit," << TotalSplit << '\n';
     file << "SplitWin," << SplitWin << '\n';
+    file << "SplitLose," << SplitLose << '\n';
 
     file << "PSplitWinRank";
     for (int i = 0; i < 11; i++) {
         file << "," << PSplitWinRank[i];
+    }
+    file << '\n';
+    file << "PSplitLoseRank";
+    for (int i = 0; i < 11; i++) {
+        file << "," << PSplitLoseRank[i];
     }
     file << '\n';
 

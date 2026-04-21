@@ -15,6 +15,7 @@ public:
     int softScore = 0;
     int first2SoftScore = 0;
     int first2HardScore = 0;
+    int first2Score = 0;
     bool resolved = false;
     bool isDoubled = false;
     bool wasSoft = false;
@@ -104,6 +105,12 @@ protected:
     int PLose16 = 0;
     int PWinDBust = 0;
 
+    int PBust = 0;
+    int DLoseAgainstPScore[32] = { 0 };
+    int DWinAgainstPScore[32] = { 0 };
+    int DLoseAgainstPFirst2Score[22] = { 0 };
+    int DWinAgainstPFirst2Score[22] = { 0 };
+
     int PWinSoft[22] = { 0 }; //if player wins, track if player wins with soft or hard score
     int PWinHard[22] = { 0 };
     int PLoseFirst2Soft[22] = { 0 }; //if player loses, track the score of first 2 cards (soft or hard)
@@ -134,6 +141,12 @@ public:
     void upPTotalHit(int x);
     void upPHitWin();
     void upPStandedWin();
+    void upPBust();
+
+    void upDLoseAgainstPScore(int i);
+    void upDWinAgainstPScore(int i);
+    void upDLoseAgainstPFirst2Score(int i);
+    void upDWinAgainstPFirst2Score(int i);
 
     void upPWinSoft(int i);
     void upPWinHard(int i);
@@ -159,7 +172,9 @@ protected:
     int PLoseVSup[11] = { 0 }; //if player loses, track the up card of dealer
     int TotalSplit = 0;
     int SplitWin = 0;
+    int SplitLose = 0;
     int PSplitWinRank[11] = { 0 };
+    int PSplitLoseRank[11] = { 0 };
     int PSplitWinVSup[11] = { 0 };
     int PSplitLoseVSup[11] = { 0 };
 
@@ -185,11 +200,15 @@ protected:
 public:
     void upPWinVSup(int i);
     void upPLoseVSup(int i);
+
     void upTotalSplit(int x);
     void upSplitWin();
+    void upSplitLose();
     void upPSplitWinRank(int i);
+    void upPSplitLoseRank(int i);
     void upPSplitWinVSup(int i);
     void upPSplitLoseVSup(int i);
+
     void downPBJWin();
     void setEVBJ();
     void upInsureCount();

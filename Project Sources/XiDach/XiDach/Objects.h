@@ -19,6 +19,7 @@ public:
     bool resolved = false;
     bool isDoubled = false;
     bool wasSoft = false;
+    bool splited = false;
 
     Hand();
 

@@ -18,10 +18,6 @@ void doResultBJ(Hand& p, Hand& d, int& result, StatBJ& stat) {
                 if (p.wasSoft) stat.upDoubleWinSoftScore(p.first2SoftScore);
                 else {
                     stat.upDoubleWinHardScore(p.first2HardScore);
-                    if (p.first2HardScore < 10) {
-                        p.printHand();
-                        cout << '\n';
-                    }
                 }
             }
             stat.upDLoseAgainstPScore(p.getScore());
@@ -89,20 +85,31 @@ int playerWantsBJ(Hand& p, Hand& d) { //Modify this to change the strategy of pl
     p.calculateScore();
     if (p.getScore() >= 21) return STAND; //best possible score
     //Add Split conditions here
-    if (p.isSplitable) return SPLIT;
-    //If hand should no longer Split, consider Doubling now
-    if (p.isSoft && p.getScore() >= 12 && p.hand.size() == 2) { 
-        if (d.getFaceup() <= 5) return DDOUBLE; //2 'D's
+    if (p.getFaceup() == 1 && p.splited) return STAND; //Must stand if splited Ace
+    if (p.isSplitable) {
+        int up = p.getFaceup();
+        if (up == 1 || up == 8) return SPLIT;
+        else if (up == 10) return STAND;
+        else if (up == 5) return DDOUBLE;
+        else if (up == 4 && d.getFaceup() >= 3 && d.getFaceup() <= 6) return SPLIT;
+        else if ((up == 2 || up == 3 || up == 6 || up == 7) && d.getFaceup() >= 2 && d.getFaceup() <= 7) return SPLIT;
+        else if (up == 9 && d.getFaceup() >= 2 && d.getFaceup() <= 8) return SPLIT;
     }
-    else if (!p.isSoft && p.getScore() >= 10 && p.hand.size() == 2) {
-        if (d.getFaceup() <= 5) return DDOUBLE;
+    //If hand should no longer Split, consider Doubling now
+    if (p.isSoft && p.getScore() >= 13 && p.getScore() <= 18 && p.hand.size() == 2) {
+        if (d.getFaceup() >= 3 && d.getFaceup() <= 6) return DDOUBLE;
+    }
+    else if (!p.isSoft && p.getScore() >= 9 && p.getScore() <= 11 && p.hand.size() == 2) {
+        if (p.getScore() == 11) return DDOUBLE;
+        else if (p.getScore() == 10 && (d.getFaceup() != 1 && d.getFaceup() != 10)) return DDOUBLE;
+        else if (p.getScore() == 9 && d.getFaceup() >= 3 && d.getFaceup() <= 6) return DDOUBLE;
     }
     //Note that optimal strategy MIGHT stand when very low score like 12-15
     if (p.getScore() < 16) return HIT;
     if (p.isSoft) return HIT;
     if (!p.isSoft && p.getScore() == 16 && d.getFaceup() == 10) return SURRENDER;
     if (p.getScore() == 16) {
-        if (d.getFaceup() == 1) return HIT;
+        if (d.getFaceup() == 1 && d.getFaceup() == 2) return HIT;
     }
     return STAND;
 }
@@ -115,7 +122,7 @@ bool playerInsure(Hand& p, Hand& d) {
 
 void ProcessSimulationBJ(Match& match, Dealer& dealer, StatBJ& stat) {
     //cout << "Dealer's first hand: ";
-    //dealer.printDealerHand();
+    //dealer.printprintDealerHand();
     Hand& d = dealer.hands[0];
     d.calculateScore();
     while (d.getScore() < 17) {
@@ -161,6 +168,7 @@ void ProcessSimulationBJ(Match& match, Dealer& dealer, StatBJ& stat) {
                 if (action == SPLIT) {
                     match.splitTo(p, i);
                     stat.upTotalSplit(1);
+                    
                     continue;
                 }
                 if (action == HIT) {

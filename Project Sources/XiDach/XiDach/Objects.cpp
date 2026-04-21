@@ -233,6 +233,9 @@ void Match::splitTo(Player& p, int x) {
     p.splitHand(x);
     dealCardToPlayer(p, x);
     dealCardToPlayer(p, p.hands.size() - 1);
+    for (auto& h : p.hands) {
+        h.splited = true;
+    }
     p.hands[x].calculateScore();
     p.hands.back().calculateScore();
 }

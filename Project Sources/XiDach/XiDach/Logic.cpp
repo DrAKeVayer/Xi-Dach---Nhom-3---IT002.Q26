@@ -5,16 +5,18 @@
 #include "LogicXD.h"
 
 int compareHands(Hand& a, Hand& b) {
-    if ((a.isBust && b.isBust) && a.resolved) return 0; //only in XD mode where players will have flag resolved being true when comparing
-    if (a.isBust) {
-        return -1;
-    }
-    if (b.isBust) {
-        return 1;
-    }
     HandType ta = a.getHandType();
     HandType tb = b.getHandType();
-
+    if (a.resolved) {
+        if (a.isBust && b.isBust) return 0;
+    }
+    else {
+        if (a.isBust) return -1;
+        if (b.isBust) return 1;
+        if (ta == NGULINH || ta == XIBANG) ta = THUONG;
+        if (a.splited && ta == XIDACH) ta = THUONG;
+        if (tb == NGULINH || tb == XIBANG) tb = THUONG;
+    }
     if (ta != tb) {
         return (ta > tb) ? 1 : -1; //Compare types;
     }

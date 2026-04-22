@@ -49,14 +49,12 @@ public:
     void resetPlayer();
     void splitHand(int x);
     void printHand() const;
-
 };
 
 class Dealer : public Player {
 public:
     void printDealerFirstHand() const;
     void printDealerHand() const;
-
 };
 
 class Match {
@@ -127,6 +125,8 @@ protected:
 
     int DBustCount = 0;
     int BustDraw = 0;
+    double TotalProfit = 0;
+    int TotalRound = 0;
 
 public:
     void upPWinDBust();
@@ -161,6 +161,9 @@ public:
 
     void upDBustCount();
     void upBustDraw();
+
+    void upTotalProfit(double x);
+    void setTotalRound(int x);
 
     virtual void printStat();
 

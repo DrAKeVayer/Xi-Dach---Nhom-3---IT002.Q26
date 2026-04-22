@@ -256,7 +256,7 @@ void ProcessSimulationXD(Match& match, Dealer& dealer, StatXD& stat) {
 }
 
 void SimulationXD(ofstream& file) {
-    cout << "How many players?" << '\n';
+    cout << "How many players (including dealer)?" << '\n';
     int n; cin >> n;
     cout << "How many Matches?" << '\n';
     int u; cin >> u;

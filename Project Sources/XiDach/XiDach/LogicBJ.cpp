@@ -9,9 +9,14 @@ void doResultBJ(Hand& p, Hand& d, int& result, StatBJ& stat) {
         //cout << '\n' << "Player wins with hand: ";
         //p.printHand();
         stat.upPWin();
-        if (p.getHandType() == XIDACH) stat.upPBJWin(); //wins due to BJ won't count for any stat below
+        if (p.getHandType() == XIDACH) {
+            stat.upPBJWin();
+            stat.upTotalProfit(1.5);
+        }//wins due to BJ won't count for any stat below
         else {
+            stat.upTotalProfit(1.0);
             if (p.isDoubled) {
+                stat.upTotalProfit(1.0);
                 stat.upDoubleWinCount();
                 stat.upDoubleVSup(d.getFaceup());
                 stat.upDoubleWinVSup(d.getFaceup());
@@ -42,9 +47,11 @@ void doResultBJ(Hand& p, Hand& d, int& result, StatBJ& stat) {
         }
     }
     else if (result == -1) {
+        stat.upTotalProfit(-1.0);
         //cout << '\n' << "Dealer wins against player's hand: ";
         //p.printHand();
         if (p.isDoubled) {
+            stat.upTotalProfit(-1.0);
             stat.upDoubleLoseCount();
             stat.upDoubleVSup(d.getFaceup());
             stat.upDoubleLoseVSup(d.getFaceup());
@@ -85,24 +92,13 @@ int playerWantsBJ(Hand& p, Hand& d) { //Modify this to change the strategy of pl
     p.calculateScore();
     if (p.getScore() >= 21) return STAND; //best possible score
     //Add Split conditions here
-    if (p.getFaceup() == 1 && p.splited) return STAND; //Must stand if splited Ace
-    if (p.isSplitable) {
-        int up = p.getFaceup();
-        if (up == 1 || up == 8) return SPLIT;
-        else if (up == 10) return STAND;
-        else if (up == 5) return DDOUBLE;
-        else if (up == 4 && d.getFaceup() >= 3 && d.getFaceup() <= 6) return SPLIT;
-        else if ((up == 2 || up == 3 || up == 6 || up == 7) && d.getFaceup() >= 2 && d.getFaceup() <= 7) return SPLIT;
-        else if (up == 9 && d.getFaceup() >= 2 && d.getFaceup() <= 8) return SPLIT;
-    }
+    if (p.isSplitable) return SPLIT;
     //If hand should no longer Split, consider Doubling now
-    if (p.isSoft && p.getScore() >= 13 && p.getScore() <= 18 && p.hand.size() == 2) {
-        if (d.getFaceup() >= 3 && d.getFaceup() <= 6) return DDOUBLE;
+    if (p.isSoft && p.getScore() >= 11 && p.getScore() <= 16 && p.hand.size() == 2) {
+        return DDOUBLE; //2 'D's
     }
-    else if (!p.isSoft && p.getScore() >= 9 && p.getScore() <= 11 && p.hand.size() == 2) {
-        if (p.getScore() == 11) return DDOUBLE;
-        else if (p.getScore() == 10 && (d.getFaceup() != 1 && d.getFaceup() != 10)) return DDOUBLE;
-        else if (p.getScore() == 9 && d.getFaceup() >= 3 && d.getFaceup() <= 6) return DDOUBLE;
+    else if (!p.isSoft && p.getScore() >= 10 && p.getScore() <= 13 && p.hand.size() == 2) {
+        return DDOUBLE;
     }
     //Note that optimal strategy MIGHT stand when very low score like 12-15
     if (p.getScore() < 16) return HIT;
@@ -183,6 +179,7 @@ void ProcessSimulationBJ(Match& match, Dealer& dealer, StatBJ& stat) {
                 }
                 if (action == SURRENDER) {
                     resolved = true;
+                    stat.upTotalProfit(-0.5);
                     stat.upSurrenderCount();
                 }
                 break;
@@ -201,13 +198,14 @@ void ProcessSimulationBJ(Match& match, Dealer& dealer, StatBJ& stat) {
 }
 
 void SimulationBJ(ofstream& file) {
-    cout << "How many players?" << '\n';
+    cout << "How many players (including dealer)?" << '\n';
     int n; cin >> n;
     cout << "How many Matches?" << '\n';
     int u; cin >> u;
 
     Match match;
     StatBJ stat;
+    stat.setTotalRound((n - 1) * u);
     match.dealer.hands[0].reset();
     for (int i = 0; i < n - 1; i++) {
         match.addPlayer(Player());

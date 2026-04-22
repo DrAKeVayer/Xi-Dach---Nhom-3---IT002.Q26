@@ -9,19 +9,20 @@ void doResultBJ(Hand& p, Hand& d, int& result, StatBJ& stat) {
         //cout << '\n' << "Player wins with hand: ";
         //p.printHand();
         stat.upPWin();
-        if (p.getHandType() == XIDACH) stat.upPBJWin(); //wins due to BJ won't count for any stat below
+        if (p.getHandType() == XIDACH) {
+            stat.upPBJWin();
+            stat.upTotalProfit(1.5);
+        }//wins due to BJ won't count for any stat below
         else {
+            stat.upTotalProfit(1.0);
             if (p.isDoubled) {
+                stat.upTotalProfit(1.0);
                 stat.upDoubleWinCount();
                 stat.upDoubleVSup(d.getFaceup());
                 stat.upDoubleWinVSup(d.getFaceup());
                 if (p.wasSoft) stat.upDoubleWinSoftScore(p.first2SoftScore);
                 else {
                     stat.upDoubleWinHardScore(p.first2HardScore);
-                    if (p.first2HardScore < 10) {
-                        p.printHand();
-                        cout << '\n';
-                    }
                 }
             }
             stat.upDLoseAgainstPScore(p.getScore());
@@ -46,9 +47,11 @@ void doResultBJ(Hand& p, Hand& d, int& result, StatBJ& stat) {
         }
     }
     else if (result == -1) {
+        stat.upTotalProfit(-1.0);
         //cout << '\n' << "Dealer wins against player's hand: ";
         //p.printHand();
         if (p.isDoubled) {
+            stat.upTotalProfit(-1.0);
             stat.upDoubleLoseCount();
             stat.upDoubleVSup(d.getFaceup());
             stat.upDoubleLoseVSup(d.getFaceup());
@@ -91,18 +94,18 @@ int playerWantsBJ(Hand& p, Hand& d) { //Modify this to change the strategy of pl
     //Add Split conditions here
     if (p.isSplitable) return SPLIT;
     //If hand should no longer Split, consider Doubling now
-    if (p.isSoft && p.getScore() >= 12 && p.hand.size() == 2) { 
-        if (d.getFaceup() <= 5) return DDOUBLE; //2 'D's
+    if (p.isSoft && p.getScore() >= 11 && p.getScore() <= 16 && p.hand.size() == 2) {
+        return DDOUBLE; //2 'D's
     }
-    else if (!p.isSoft && p.getScore() >= 10 && p.hand.size() == 2) {
-        if (d.getFaceup() <= 5) return DDOUBLE;
+    else if (!p.isSoft && p.getScore() >= 10 && p.getScore() <= 13 && p.hand.size() == 2) {
+        return DDOUBLE;
     }
     //Note that optimal strategy MIGHT stand when very low score like 12-15
     if (p.getScore() < 16) return HIT;
     if (p.isSoft) return HIT;
     if (!p.isSoft && p.getScore() == 16 && d.getFaceup() == 10) return SURRENDER;
     if (p.getScore() == 16) {
-        if (d.getFaceup() == 1) return HIT;
+        if (d.getFaceup() == 1 && d.getFaceup() == 2) return HIT;
     }
     return STAND;
 }
@@ -115,7 +118,7 @@ bool playerInsure(Hand& p, Hand& d) {
 
 void ProcessSimulationBJ(Match& match, Dealer& dealer, StatBJ& stat) {
     //cout << "Dealer's first hand: ";
-    //dealer.printDealerHand();
+    //dealer.printprintDealerHand();
     Hand& d = dealer.hands[0];
     d.calculateScore();
     while (d.getScore() < 17) {
@@ -161,6 +164,7 @@ void ProcessSimulationBJ(Match& match, Dealer& dealer, StatBJ& stat) {
                 if (action == SPLIT) {
                     match.splitTo(p, i);
                     stat.upTotalSplit(1);
+                    
                     continue;
                 }
                 if (action == HIT) {
@@ -175,6 +179,7 @@ void ProcessSimulationBJ(Match& match, Dealer& dealer, StatBJ& stat) {
                 }
                 if (action == SURRENDER) {
                     resolved = true;
+                    stat.upTotalProfit(-0.5);
                     stat.upSurrenderCount();
                 }
                 break;
@@ -193,13 +198,14 @@ void ProcessSimulationBJ(Match& match, Dealer& dealer, StatBJ& stat) {
 }
 
 void SimulationBJ(ofstream& file) {
-    cout << "How many players?" << '\n';
+    cout << "How many players (including dealer)?" << '\n';
     int n; cin >> n;
     cout << "How many Matches?" << '\n';
     int u; cin >> u;
 
     Match match;
     StatBJ stat;
+    stat.setTotalRound((n - 1) * u);
     match.dealer.hands[0].reset();
     for (int i = 0; i < n - 1; i++) {
         match.addPlayer(Player());

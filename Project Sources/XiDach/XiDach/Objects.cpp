@@ -233,6 +233,9 @@ void Match::splitTo(Player& p, int x) {
     p.splitHand(x);
     dealCardToPlayer(p, x);
     dealCardToPlayer(p, p.hands.size() - 1);
+    for (auto& h : p.hands) {
+        h.splited = true;
+    }
     p.hands[x].calculateScore();
     p.hands.back().calculateScore();
 }
@@ -288,6 +291,9 @@ void Stat::upPLoseAfterHitTime(int i) { PLoseAfterHitTime[i]++; }
 
 void Stat::upDBustCount() { DBustCount++; }
 void Stat::upBustDraw() { BustDraw++; }
+
+void Stat::upTotalProfit(double x) { TotalProfit += x; }
+void Stat::setTotalRound(int x) { TotalRound = x; }
 
 void Stat::printStat() {
     cout << "GENERIC STATS: " << '\n';
@@ -453,9 +459,7 @@ void StatBJ::upDoubleLoseVSup(int i) { DoubleLoseVSup[i]++; }
 void StatBJ::upSurrenderCount() { SurrenderCount++; }
 
 void StatBJ::setEVBJ() {
-    double numer = (PWin - PBJWin) + 1.5*PBJWin - PLose + InsureWinCount - 0.5*InsureLoseCount - 0.5*SurrenderCount + 2*DoubleWinCount - 2*DoubleLoseCount;
-    double deno = PWin + DWin + Draw + DoubleCount + SurrenderCount;
-    EVBJ = numer / deno;
+    EVBJ = double(TotalProfit / TotalRound);
 }
 
 void StatBJ::printStat() {
@@ -624,9 +628,9 @@ void StatXD::upDNLWinCount() { DNLWinCount++; }
 void StatXD::upNLDrawCount() { NLDrawCount++; }
 
 void StatXD::setEVXD() {
-    double numer = PWin - DWin;
-    double deno = PWin + DWin + Draw;
-    EVXD = numer / deno;
+    int numer = PWin - DWin;
+    int deno = PWin + DWin + Draw;
+    EVXD = double(numer / deno);
 }
 
 void StatXD::printStat() {

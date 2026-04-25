@@ -89,26 +89,44 @@ void doResultBJ(Hand& p, Hand& d, int& result, StatBJ& stat) {
 
 int playerWantsBJ(Hand& p, Hand& d) { //Modify this to change the strategy of players. Note that dealer always stand on 17 or higher
     //Use getFaceUp() function to get the value of Splitable cards in hand
+    int dUp = d.getFaceup();
     p.calculateScore();
     if (p.getScore() >= 21) return STAND; //best possible score
     //Add Split conditions here
-    if (p.isSplitable) return SPLIT;
-    //If hand should no longer Split, consider Doubling now
-    if (p.isSoft && p.getScore() >= 11 && p.getScore() <= 16 && p.hand.size() == 2) {
-        return DDOUBLE; //2 'D's
+    if (p.getFaceup() == 1 && p.splited) return STAND; //Must stand if splited Ace
+    if (p.isSplitable) {
+        int up = p.getFaceup();
+        if (up == 1 || up == 8) return SPLIT;
+        else if (up == 10) return STAND;
+        else if (up == 5) return DDOUBLE;
+        else if (up == 4 && dUp >= 3 && dUp <= 6) return SPLIT;
+        else if ((up == 2 || up == 3 || up == 6 || up == 7) && dUp >= 2 && dUp <= 7) return SPLIT;
+        else if (up == 9 && dUp >= 2 && dUp <= 8) return SPLIT;
     }
-    else if (!p.isSoft && p.getScore() >= 10 && p.getScore() <= 13 && p.hand.size() == 2) {
-        return DDOUBLE;
+    //If hand should no longer Split, consider Doubling now
+    if (p.isSoft && p.getScore() >= 13 && p.getScore() <= 18 && p.hand.size() == 2) {
+        if (dUp >= 3 && dUp <= 6) return DDOUBLE;
+    }
+    else if (!p.isSoft && p.getScore() >= 9 && p.getScore() <= 11 && p.hand.size() == 2) {
+        if (p.getScore() == 11) return DDOUBLE;
+        else if (p.getScore() == 10 && (dUp != 1 && dUp != 10)) return DDOUBLE;
+        else if (p.getScore() == 9 && dUp >= 3 && dUp <= 6) return DDOUBLE;
     }
     //Note that optimal strategy MIGHT stand when very low score like 12-15
-    if (p.getScore() < 16) return HIT;
-    if (p.isSoft) return HIT;
-    if (!p.isSoft && p.getScore() == 16 && d.getFaceup() == 10) return SURRENDER;
-    if (p.getScore() == 16) {
-        if (d.getFaceup() == 1 && d.getFaceup() == 2) return HIT;
+    if (p.isSoft) {
+        if (p.getScore() < 18) return HIT;
+        if (p.getScore() == 18 && (dUp == 1 || dUp >= 8)) return HIT;
+        else return STAND;
     }
-    return STAND;
+    else {
+        if (p.getScore() < 12) return HIT;
+        if (p.getScore() > 16) return STAND;
+        if ((p.getScore() == 15 || p.getScore() == 16) && (p.hand.size() == 2) && !p.splited && (dUp == 1 || dUp >= 8)) return SURRENDER;
+        if (p.getScore() >= 12 && p.getScore() <= 16 && dUp >= 3 && dUp <= 6) return STAND;
+    }
+    return HIT;
 }
+
 
 bool playerInsure(Hand& p, Hand& d) {
     //In stardard strategy, there's no way other than card counting that makes insurance an advised choice
@@ -123,6 +141,7 @@ void ProcessSimulationBJ(Match& match, Dealer& dealer, StatBJ& stat) {
     d.calculateScore();
     while (d.getScore() < 17) {
         match.dealCardToPlayer(dealer, 0);
+        if (d.isBust) stat.upDBustCount();
     }
     //cout << '\n' << "Dealer's final hand: ";
     //dealer.printDealerHand();
@@ -232,6 +251,53 @@ bool DealerWantsBJ(Match& match, Dealer& d) {
     d.hands[0].calculateScore();
     if (d.hands[0].getScore() < 17) return true;
     return false;
+}
+
+void AnotherRound() {
+    cout << "Try another round? (y = Yes, n = no)" << '\n';
+    char x; cin >> x;
+    if (x == 'y') PlayBJ();
+    else return;
+}
+void Options(Player& p, Hand& h, Dealer& d, int x) {
+    char i;
+    if (x == 0) {
+        cout << "Buy (I)nsurance?";
+        AISuggest(p, h, d);
+        cin >> i;
+        if (x == 'I') {
+            if (d.hands[0].getHandType() == XIDACH) {
+                cout << "Success! Dealer has BlackJack and you break even this round" << '\n';
+                AnotherRound();
+            }
+            else {
+                cout << "Fail! Dealer doesn't have BlackJack. You lost 0.5x bet" << '\n';
+            }
+        }
+    }
+    if (x == 1) {
+        cout << "Enter your choice: S(u)rrender, (S)plit, (D)ouble, (H)it, (S)tand";
+    }
+}
+void PrintState(Player& p, Dealer& d) {
+
+}
+void PrintPBust(Hand& h) {
+
+}
+void PrintResult(Player& p, Dealer& d) {
+
+}
+
+void AISuggest(Player& p, Hand& h, Dealer& d) {
+    int res = playerWantsBJ(h, d.hands[0]);
+    cout << " (AI suggested choice: ";
+    if (res == HIT) cout << "Hit)" << '\n';
+    if (res == DDOUBLE) cout << "Double)" << '\n';
+    if (res == STAND) cout << "Stand)" << '\n';
+    if (res == SPLIT) cout << "Split)" << '\n';
+    if (res == SURRENDER) cout << "Surrender)" << '\n';
+    cout << '\n';
 }
 
 void ProcessPlayBJ(Match& match, Dealer& d) {

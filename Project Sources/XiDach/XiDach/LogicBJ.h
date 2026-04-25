@@ -19,6 +19,14 @@ void SimulationBJ(ofstream& file);
 
 bool DealerWantsBJ(Match& match, Dealer& d);
 
+void AnotherRound();
+void Options(Player& p, Hand& h, Dealer& d, int x);
+void PrintState(Player& p, Dealer& d);
+void PrintPBust(Hand& h);
+void PrintResult(Player& p, Dealer& d);
+void AISuggest(Player& p, Hand& h, Dealer& d);
+
+
 void ProcessPlayBJ(Match& match, Dealer& d);
 
 void PlayBJ();

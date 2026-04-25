@@ -13,6 +13,8 @@ void doResultXD(Hand& p, Hand& d, int& result, StatXD& stat) {
         if (p.getHandType() == XIDACH) stat.upPBJWin(); //wins due to BJ won't count for any stat below
         else if (p.getHandType() == XIBANG) stat.upXBCount();
         else {
+            stat.upDLoseAgainstPScore(p.getScore());
+            stat.upDLoseAgainstPFirst2Score(p.first2Score);
             if (p.getScore() == 16) stat.upPWin16();
             if (p.first2HardScore > 0) stat.upPWinFirst2Hard(p.first2HardScore);
             else stat.upPWinFirst2Soft(p.first2SoftScore);
@@ -31,6 +33,8 @@ void doResultXD(Hand& p, Hand& d, int& result, StatXD& stat) {
         //cout << '\n' << "Dealer wins against player's hand: "<< '\n';
         //p.printHand();
         stat.upDWin();
+        stat.upDWinAgainstPScore(p.getScore());
+        stat.upDWinAgainstPFirst2Score(p.first2Score);
         if (d.getHandType() == NGULINH) stat.upDNLWinCount();
         stat.upPLoseAfterHitTime(p.hand.size() - 2);
         if (d.getHandType() == XIBANG) stat.upXBCount();
@@ -134,6 +138,7 @@ void ProcessSimulationXD(Match& match, Dealer& dealer, StatXD& stat) {
             int action = playerWantsXD(p.hands[0], d);
             if (action == 1) {
                 match.dealCardToHand(p.hands[0]);
+                if (p.hands[0].isBust) stat.upPBust();
                 //cout << "Just hit for: ";
                 //p.hands[0].printNewCard();
                 //cout << '\n';

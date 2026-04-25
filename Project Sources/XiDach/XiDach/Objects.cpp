@@ -309,14 +309,14 @@ void Stat::printStat() {
     cout << "Player busts " << PBust << " hands" << '\n';
     cout << "Dealer wins against Player's final score 10 to 22:" << '\n';
     for (int i = 10; i < 22; i++) cout << DWinAgainstPScore[i] << " - ";
-    cout << "Dealer loses against Player's final score 10 to 22:" << '\n';
-    for (int i = 10; i < 22; i++) cout << DWinAgainstPScore[i] << " - ";
-    cout << "Dealer wins against Player's first 2 card score 10 to 22:" << '\n';
-    for (int i = 2; i < 22; i++) cout << DWinAgainstPScore[i] << " - ";
-    cout << "Dealer loses against Player's first 2 card score 10 to 22:" << '\n';
-    for (int i = 2; i < 22; i++) cout << DWinAgainstPScore[i] << " - ";
+    cout << '\n' << "Dealer loses against Player's final score 10 to 22:" << '\n';
+    for (int i = 10; i < 22; i++) cout << DLoseAgainstPScore[i] << " - ";
+    cout << '\n' << "Dealer wins against Player's first 2 card score 10 to 22:" << '\n';
+    for (int i = 2; i < 22; i++) cout << DWinAgainstPFirst2Score[i] << " - ";
+    cout << '\n' << "Dealer loses against Player's first 2 card score 10 to 22:" << '\n';
+    for (int i = 2; i < 22; i++) cout << DLoseAgainstPFirst2Score[i] << " - ";
 
-    cout << "Player wins with soft score from 16 to 21: " << '\n';
+    cout << '\n' << "Player wins with soft score from 16 to 21: " << '\n';
     for (int i = 16; i < 22; i++) cout << PWinSoft[i] << " - ";
     cout << '\n' << "Player wins with hard score from 16 to 21: " << '\n';
     for (int i = 16; i < 22; i++) cout << PWinHard[i] << " - ";
@@ -489,7 +489,7 @@ void StatBJ::printStat() {
     cout << '\n' << "With Soft score at that time from 12 to 21 "; //Soft 12 (A + A) mean can try doubling to get 21 (A + A + 9)
     for (int i = 12; i < 22; i++) cout << DoubleWinSoftScore[i] << " - ";
     cout << '\n' << "With Hard score at that time from 6 to 21 "; //Hard < 5 (2 + 3) can never reach 16 with 1 more card
-    for (int i = 12; i < 22; i++) cout << DoubleWinHardScore[i] << " - ";
+    for (int i = 6; i < 22; i++) cout << DoubleWinHardScore[i] << " - ";
     cout << '\n' << "Against Dealer's up card ranked 1 to 10: ";
     for (int i = 1; i < 11; i++) cout << DoubleWinVSup[i] << " - ";
 
@@ -497,7 +497,7 @@ void StatBJ::printStat() {
     cout << '\n' << "With Soft score at that time from 12 to 21 "; //Soft 12 (A + A) mean can try doubling to get 21 (A + A + 9)
     for (int i = 12; i < 22; i++) cout << DoubleLoseSoftScore[i] << " - ";
     cout << '\n' << "With Hard score at that time from 6 to 21 "; //Hard < 5 (2 + 3) can never reach 16 with 1 more card
-    for (int i = 12; i < 22; i++) cout << DoubleLoseHardScore[i] << " - ";
+    for (int i = 6; i < 22; i++) cout << DoubleLoseHardScore[i] << " - ";
     cout << '\n' << "Against Dealer's up card ranked 1 to 10: ";
     for (int i = 1; i < 11; i++) cout << DoubleLoseVSup[i] << " - ";
     cout << '\n' << "Player surrenders " << SurrenderCount << " hands total";
@@ -628,8 +628,8 @@ void StatXD::upDNLWinCount() { DNLWinCount++; }
 void StatXD::upNLDrawCount() { NLDrawCount++; }
 
 void StatXD::setEVXD() {
-    int numer = PWin - DWin;
-    int deno = PWin + DWin + Draw;
+    double numer = PWin - DWin;
+    double deno = PWin + DWin + Draw;
     EVXD = double(numer / deno);
 }
 

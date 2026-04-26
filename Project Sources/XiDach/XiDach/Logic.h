@@ -7,4 +7,10 @@
 
 int compareHands(Hand& a, Hand& b);
 
-void HitPlay(Match& match, Dealer& d, int i);
+void HitPlay(Match& match, Player& p, Hand& h, Dealer& d);
+void InsurePlay(Match& match, Player& p, Hand& h, Dealer& d);
+void SplitPlay(Match& match, Player& p, Hand& h, Dealer& d);
+void SurrenderPlay(Match& match, Player& p, Hand& h, Dealer& d);
+void StandPlay(Match& match, Player& p, Hand& h, Dealer& d);
+void DoublePlay(Match& match, Player& p, Hand& h, Dealer& d);
+void PrintResult(Match& match, Hand& h, Dealer& d, int res);

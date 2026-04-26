@@ -1,10 +1,12 @@
 #pragma once
 #include "constants.h"
 using namespace std;
+class Player;
 
 class Hand {
 public:
     vector<int> hand;
+    Player* owner;
     int score = 0;
     bool isBust = false;
     bool hasAce = false;
@@ -20,8 +22,12 @@ public:
     bool isDoubled = false;
     bool wasSoft = false;
     bool splited = false;
+    int Pos;
+    double profit = 0;
+    bool surrendered = false;
+    bool stood = false;
 
-    Hand();
+    Hand(Player* _p, int _C);
 
     void reset();
     void calculateScore();
@@ -34,7 +40,8 @@ public:
     HandType getHandType();
     int getScore() const;
     int getSoftScore() const;
-    void printNewCard() const;
+    void upProfit(double x);
+    void printNewCard();
     void printHand() const;
 
 };
@@ -42,19 +49,33 @@ public:
 class Player {
 public:
     vector<Hand> hands;
+    int splitCount = 0;
+    double profit = 0;
+    int Pos = 0;
 
-    Player();
+    Player() = default;
+    Player(int _p);
 
     virtual ~Player();
     void resetPlayer();
     void splitHand(int x);
-    void printHand() const;
+    void printHand();
+    void printProfit();
+    virtual void printOwner();
+    virtual void printForWho(Hand& h);
+    void upProfit(double x);
 };
 
 class Dealer : public Player {
 public:
+    using Player::Player;
+
+    bool stood = false;
     void printDealerFirstHand() const;
     void printDealerHand() const;
+    void printOwner() override;
+    void printForWho(Hand& h) override;
+
 };
 
 class Match {
@@ -70,7 +91,7 @@ public:
 
     Match();
 
-    void addPlayer(Player p);
+    void addPlayer(int i);
     void deckInit();
     void shuffle();
     void deckReset();

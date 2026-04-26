@@ -28,14 +28,59 @@ int compareHands(Hand& a, Hand& b) {
     return 0; //Tie
 }
 
-void HitPlay(Match& match, Dealer& d, int i) {
-    match.dealCardToHand(match.players[0].hands[i]);
-    cout << "You just hit for: ";
-    match.players[0].hands[i].printNewCard();
-    cout << '\n' << "Your hand number " << i + 1 << " is now ";
-    match.players[0].hands[i].printHand();
-    if (match.players[0].hands[i].isBust) {
-        cout << '\n' << "This hand is busted! Bad luck ..." << '\n';
-        return;
+void HitPlay(Match& match, Player& p, Hand& h, Dealer& d) {
+    match.dealCardToHand(h);
+    h.printNewCard();
+    if (h.isBust) {
+        PrintPBust(h);
+    }
+    return;
+}
+void InsurePlay(Match& match, Player& p, Hand& h, Dealer& d) {
+    if (d.hands[0].getHandType() == XIDACH) {
+        cout << "Success! Dealer has BlackJack and you break even this round" << '\n';
+        h.upProfit(1.0);
+    }
+    else {
+        cout << "Fail! Dealer doesn't have BlackJack. You lost 0.5x bet" << '\n';
+        h.upProfit(-0.5);
+    }
+    return;
+}
+void SplitPlay(Match& match, Player& p, Hand& h, Dealer& d) {
+    cout << "You splited your hand number " << h.Pos << " and drew 2 new cards for each" << '\n';
+    match.splitTo(p, (h.Pos - 1));
+    PrintState(match, p, d);
+    return;
+}
+void SurrenderPlay(Match& match, Player& p, Hand& h, Dealer& d) {
+    cout << "You surrendered your hand and lost 0.5x bet" << '\n';
+    h.surrendered = true;
+}
+void StandPlay(Match& match, Player& p, Hand& h, Dealer& d) {
+    cout << "You stood your hand number " << h.Pos << '\n';
+    h.stood = true;
+}
+void DoublePlay(Match& match, Player& p, Hand& h, Dealer& d) {
+    cout << "You doubled down your current hand." << '\n';
+    h.isDoubled = true;
+    match.dealCardToHand(h);
+    h.printNewCard();
+    if (h.isBust) {
+        PrintPBust(h);
+    }
+}
+
+void PrintResult(Match& match, Hand& h, Dealer& d, int res) {
+    if (res == 1) {
+        cout << '\n' << "Congrats! Your hand no." << h.Pos << " beats the Dealer!" << '\n';
+        h.upProfit(1.0);
+    }
+    else if (res == -1) {
+        cout << '\n' << "Oh no! Dealer beats your hand no." << h.Pos << '\n';
+        h.upProfit(-1.0);
+    }
+    else if (res == 0) {
+        cout << '\n' << "Your hand no." << h.Pos << " ties with Dealer" << '\n';
     }
 }

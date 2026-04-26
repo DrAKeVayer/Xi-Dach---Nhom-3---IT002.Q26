@@ -2,7 +2,7 @@
 #include "Objects.h"
 using namespace std;
 
-Hand::Hand() : score(0) {}
+Hand::Hand(Player* _p, int _C) : score(0), owner(_p), Pos(_C + 1) {}
 
 void Hand::reset() {
     hand.clear();
@@ -104,77 +104,121 @@ int Hand::getSoftScore() const {
     return softScore;
 }
 
-void Hand::printNewCard() const {
+void Hand::upProfit(double x) {
+    profit += x;
+}
+
+void Hand::printNewCard() {
+    owner->printOwner();
     cout << getRankName(hand.back());
     cout << getSuit(hand.back());
+    owner->printForWho(*this); 
 }
 
 void Hand::printHand() const {
+    cout << "Your hand no." << Pos << ": [";
     for (int c : hand) {
         cout << getRankName(c);
         cout << getSuit(c) << ", ";
     }
     cout << "(";
     if (isSoft) cout << " Soft ";
-    cout << getScore() << ")";
+    cout << getScore() << ")]" << '\n';
 }
 
 /*...................... PLAYER ........................*/
-
-Player::Player() {
+Player::Player(int _p) : Pos(_p + 1) {
     hands.reserve(10);
-    hands.push_back(Hand());
+    hands.push_back(Hand(this, 0));
 }
 
 Player::~Player() {}
 
 void Player::resetPlayer() {
     hands.clear();
-    hands.push_back(Hand());
+    hands.push_back(Hand(this, 0));
 }
 
 void Player::splitHand(int x) {
-    hands.push_back(Hand());
+    splitCount++;
+    hands.push_back(Hand(this, splitCount));
     hands.back().hand.push_back(hands[x].hand.back());
     hands[x].hand.pop_back();
 }
 
-void Player::printHand() const {
+void Player::upProfit(double x) {
+    profit += x;
+}
+
+void Player::printOwner() {
+    cout << "You just drew ";
+}
+
+void Player::printForWho(Hand& h) {
+    cout << " for your hand no." << h.Pos << '\n';
+}
+
+void Player::printHand() {
     for (int i = 0; i < hands.size(); i++) {
-        cout << "Hand " << i + 1 << " of this player: ";
+        cout << "Your hand number " << i + 1 << ": [";
         for (int c : hands[i].hand) {
             cout << getRankName(c);
             cout << getSuit(c) << ", ";
         }
         cout << "(";
         if (hands[i].isSoft) cout << " Soft ";
-        cout << hands[i].getScore() << ")";
+        cout << hands[i].getScore() << ")]" << '\n';
+        upProfit(hands[i].profit);
     }
+}
+
+void Player::printProfit() {
+    for (auto& h : hands) {
+        upProfit(h.profit);
+    }
+    cout << "Current Profit: " << profit << " x bet";
+    cout << '\n';
 }
 
 /*............. DEALER ..............*/
 
 void Dealer::printDealerFirstHand() const {
+    cout << "Dealer's hand is: [";
     cout << getRankName(hands[0].hand[0]);
-    cout << getSuit(hands[0].hand[0]) << ", " << "?";
+    cout << getSuit(hands[0].hand[0]) << ", " << "?]" << '\n';
+}
+
+void Dealer::printOwner() {
+    cout << "Dealer just drew ";
+}
+
+void Dealer::printForWho(Hand& h) {
+    cout << '\n';
 }
 
 void Dealer::printDealerHand() const {
+    if (!stood) cout << "Dealer's hand is: [";
+    else cout << "Dealer's final hand is: [";
+    
     for (int c : hands[0].hand) {
         cout << getRankName(c);
         cout << getSuit(c) << ", ";
     }
+    cout << " (";
+    if (hands[0].isSoft) cout << " Soft ";
+    cout << hands[0].getScore() << ")]" << '\n';
 }
 
 /*...................... MATCH ........................*/
 
-Match::Match() {
+Match::Match() : dealer(0) {
+    players.reserve(15);
     deckInit();
     shuffle();
 }
 
-void Match::addPlayer(Player p) {
-    players.push_back(p);
+void Match::addPlayer(int i) {
+    players.emplace_back(Player(i));
 }
 
 void Match::deckInit() {

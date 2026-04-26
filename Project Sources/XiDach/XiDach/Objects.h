@@ -26,6 +26,7 @@ public:
     double profit = 0;
     bool surrendered = false;
     bool stood = false;
+    bool toBeChecked = false;
 
     Hand(Player* _p, int _C);
 
@@ -43,6 +44,7 @@ public:
     void upProfit(double x);
     void printNewCard();
     void printHand() const;
+    void printJustHand() const;
 
 };
 

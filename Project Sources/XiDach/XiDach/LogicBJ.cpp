@@ -312,10 +312,6 @@ void PrintState(Match& match, Player& p, Dealer& d) {
     cout << "Current state: " << '\n';
     d.printDealerFirstHand();
 }
-void PrintPBust(Hand& h) {
-    cout << "Your hand no." << h.Pos << " is Busted! Bad luck ..." << '\n';
-}
-
 
 void AISuggest(Player& p, Hand& h, Dealer& d) {
     int res = playerWantsBJ(h, d.hands[0]);
@@ -375,6 +371,7 @@ void ProcessPlayBJ(Match& match, Dealer& d) {
         }
         p.printProfit();
     }
+    AnotherRound();
     return;
 }
 

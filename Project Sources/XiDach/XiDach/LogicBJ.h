@@ -23,7 +23,7 @@ void AnotherRound();
 int GetSit(Match& match, Player& p, Hand& h, Dealer& d);
 void Options(Match& match, Player& p, Hand& h, Dealer& d, int x);
 void PrintState(Match& match, Player& p, Dealer& d);
-void PrintPBust(Hand& h);
+
 void AISuggest(Player& p, Hand& h, Dealer& d);
 
 

@@ -14,3 +14,5 @@ void SurrenderPlay(Match& match, Player& p, Hand& h, Dealer& d);
 void StandPlay(Match& match, Player& p, Hand& h, Dealer& d);
 void DoublePlay(Match& match, Player& p, Hand& h, Dealer& d);
 void PrintResult(Match& match, Hand& h, Dealer& d, int res);
+void PrintResultXD(Match& match, Player& p, Dealer& d, int res);
+void PrintPBust(Hand& h);

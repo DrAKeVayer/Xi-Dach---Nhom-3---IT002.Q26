@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <fstream>
 #include <windows.h> //for printing unicode symbols
+#include <functional>
 
 using namespace std;
 
@@ -40,6 +41,16 @@ enum Action {
     SPLIT = 4,
     DDOUBLE = 5,
     SURRENDER = 6
+};
+
+enum TIME {
+    INSURE = 0,
+    ALL = 1,
+    SPLITDOUBLE = 3,
+    SECONDSPLIT = 4,
+    FIRSTDOUBLE = 5,
+    HITSTAND = 6,
+    SECONDDOUBLE = 7
 };
 
 string getFileName(const string& base, const string& csv);

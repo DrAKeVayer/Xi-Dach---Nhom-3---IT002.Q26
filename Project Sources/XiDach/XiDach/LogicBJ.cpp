@@ -227,7 +227,7 @@ void SimulationBJ(ofstream& file) {
     stat.setTotalRound((n - 1) * u);
     match.dealer.hands[0].reset();
     for (int i = 0; i < n - 1; i++) {
-        match.addPlayer(Player());
+        match.addPlayer(i);
     }
     for (int z = 0; z < u; z++) {
         match.deckReset();
@@ -259,35 +259,63 @@ void AnotherRound() {
     if (x == 'y') PlayBJ();
     else return;
 }
-void Options(Player& p, Hand& h, Dealer& d, int x) {
+
+int GetSit(Match& match, Player& p, Hand& h, Dealer& d) {
+    if (p.hands.size() == 1 && h.hand.size() == 2) {
+        return FIRSTDOUBLE;
+    }
+    else if (p.hands.size() > 1 && h.hand.size() == 2) {
+        return SECONDDOUBLE;
+    }
+    else if (h.isSplitable && p.hands.size() == 1) {
+        return ALL;
+    }
+    else if (h.isSplitable && p.hands.size() > 1) {
+        return SECONDSPLIT;
+    }
+    return HITSTAND;
+}
+
+void Options(Match& match, Player& p, Hand& h, Dealer& d, int x) {
     char i;
+    h.printHand();
     if (x == 0) {
         cout << "Buy (I)nsurance?";
-        AISuggest(p, h, d);
         cin >> i;
         if (x == 'I') {
             if (d.hands[0].getHandType() == XIDACH) {
                 cout << "Success! Dealer has BlackJack and you break even this round" << '\n';
-                AnotherRound();
             }
             else {
                 cout << "Fail! Dealer doesn't have BlackJack. You lost 0.5x bet" << '\n';
+                h.upProfit(-0.5);
             }
         }
+        return;
     }
-    if (x == 1) {
-        cout << "Enter your choice: S(u)rrender, (S)plit, (D)ouble, (H)it, (S)tand";
-    }
+    else if (x == ALL) cout << "Enter your choice: S(u)rrender, S(p)lit, (D)ouble, (H)it, (S)tand";
+    else if (x == SECONDSPLIT) cout << "Enter your choice: S(p)lit, (D)ouble, (H)it, (S)tand";
+    else if (x == SECONDDOUBLE) cout << "Enter your choice: (D)ouble, (H)it, (S)tand";
+    else if (x == FIRSTDOUBLE) cout << "Enter your choice: S(u)rrender, (D)ouble, (H)it, (S)tand";
+    else if (x == HITSTAND) cout << "Enter your choice: (H)it, (S)tand";
+    AISuggest(p, h, d);
+    cout << "--> ";
+    cin >> i;
+    if (i == 'U') SurrenderPlay(match, p, h, d);
+    else if (i == 'P') SplitPlay(match, p, h, d);
+    else if (i == 'D') DoublePlay(match, p, h, d);
+    else if (i == 'H') HitPlay(match, p, h, d);
+    else if (i == 'S') StandPlay(match, p, h, d);
 }
-void PrintState(Player& p, Dealer& d) {
 
+void PrintState(Match& match, Player& p, Dealer& d) {
+    cout << "Current state: " << '\n';
+    d.printDealerFirstHand();
 }
 void PrintPBust(Hand& h) {
-
+    cout << "Your hand no." << h.Pos << " is Busted! Bad luck ..." << '\n';
 }
-void PrintResult(Player& p, Dealer& d) {
 
-}
 
 void AISuggest(Player& p, Hand& h, Dealer& d) {
     int res = playerWantsBJ(h, d.hands[0]);
@@ -297,110 +325,67 @@ void AISuggest(Player& p, Hand& h, Dealer& d) {
     if (res == STAND) cout << "Stand)" << '\n';
     if (res == SPLIT) cout << "Split)" << '\n';
     if (res == SURRENDER) cout << "Surrender)" << '\n';
-    cout << '\n';
 }
 
 void ProcessPlayBJ(Match& match, Dealer& d) {
-    Stat stat;
-    cout << "Dealer's hand: ";
+    Stat stat; //
     d.printDealerFirstHand();
-    cout << '\n' << "Your hand: ";
     match.players[0].printHand();
-    cout << '\n';
+    
+    if (d.hands[0].getFaceup() == 1) {
+        for (auto& p : match.players) {
+            Options(match, p, p.hands[0], d, INSURE);
+        }
+    }
 
-    if (d.hands[0].getHandType() == XIDACH && match.players[0].hands[0].getHandType() != XIDACH) {
-        cout << "Dealer has BlackJack and you don't. You lost!" << '\n';
-        cout << "Dealer's final hand: ";
-        d.hands[0].printHand();
-        cout << "Try another round? (y = Yes, n = no)" << '\n';
-        char x; cin >> x;
-        if (x == 'y') PlayBJ();
-        else return;
-    }
-    else if (d.hands[0].getHandType() != XIDACH && match.players[0].hands[0].getHandType() == XIDACH) {
-        cout << "You have BlackJack and Dealer doesn't. You win!" << '\n';
-        cout << "Dealer's final hand: ";
-        d.hands[0].printHand();
-        cout << "Try another round? (y = Yes, n = no)" << '\n';
-        char x; cin >> x;
-        if (x == 'y') PlayBJ();
-        else return;
-    }
-    else if (d.hands[0].getHandType() == XIDACH && match.players[0].hands[0].getHandType() == XIDACH) {
-        cout << "Both you and dealer have BlackJack. This round is a tie" << '\n';
-        cout << "Dealer's final hand: ";
-        d.hands[0].printHand();
-        cout << "Try another round? (y = Yes, n = no)" << '\n';
-        char x; cin >> x;
-        if (x == 'y') PlayBJ();
-        else return;
-    }
-    for (int i = 0; i < match.players[0].hands.size(); i++) {
-        match.players[0].hands[i].calculateScore();
-        if (match.players[0].hands[i].isSplitable) {
-            cout << "Split? (s = Split, n = No)" << '\n';
-            char s; cin >> s;
-            if (s == 's') {
-                match.splitTo(match.players[0], i);
-            }
-            cout << "Your hands are now: ";
-            match.players[0].printHand();
-            i--;
-            continue; //to see if the new hand is splitable again
+    if (d.hands[0].getHandType() == XIDACH) {
+        cout << "Dealer has BlackJack! All non-BlackJack players lose";
+        for (auto& p : match.players) {
+            int res = compareHands(p.hands[0], d.hands[0]);
+            PrintResult(match, p.hands[0], d, res);
         }
-        else {
-            while (true) {
-                if (match.players[0].hands[i].isBust) break;
-                if (match.players[0].hands[i].getScore() < 16) {
-                    cout << "You must hit now! Any key to proceed" << '\n';
-                    char x; cin >> x;
-                    HitPlay(match, d, i);
-                    continue;
-                }
-                if (!match.players[0].hands[i].isBust) {
-                    cout << '\n' << "Choose action for your hand number " << i + 1 << ": h = Hit, s = Stand" << '\n';
-                    char s; cin >> s;
-                    if (s == 'h') {
-                        HitPlay(match, d, i);
-                        continue;
-                    }
-                    else if (s == 's') {
-                        break;
-                    }
-                }
+        AnotherRound();
+        return;
+    }
+
+    for (auto& p : match.players) {
+        cout << "It's player no." << p.Pos << " turn" << '\n';
+        for (auto& h : p.hands) {
+            while (!h.surrendered && !h.stood && !h.isDoubled && !h.isBust) {
+                int sit = GetSit(match, p, h, d);
+                Options(match, p, h, d, sit);
             }
         }
     }
-    cout << "You chose Stand (or busted, haha) on all of your hands. Here comes the moment of truth ..." << '\n';
-    cout << "Dealer's first hand is: ";
-    d.hands[0].printHand();
+
     while (DealerWantsBJ(match, d)) {
+        d.printDealerHand();
         match.dealCardToHand(d.hands[0]);
-        cout << '\n' << "Dealer just draw: ";
         d.hands[0].printNewCard();
     }
-    cout << '\n' << "Dealer's final hand: ";
-    d.hands[0].printHand();
+    d.stood = true;
+    d.printDealerHand();
 
-    for (int i = 0; i < match.players[0].hands.size(); i++) {
-        int result = compareHands(match.players[0].hands[i], d.hands[0]);
-        if (result == 1) {
-            cout << '\n' << "Congrats! Your hand number " << i + 1 << " beats the Dealer!" << '\n';
+    int o = 1;
+    for (auto& p : match.players) {
+        cout << '\n' << "Player " << o++ << " results:";
+        for (auto& h : p.hands) {
+            int res = compareHands(h, d.hands[0]);
+            PrintResult(match, h, d, res);
         }
-        else if (result == -1) {
-            cout << '\n' << "Oh no! Dealer beats your hand number " << i + 1 << '\n';
-        }
-        else if (result == 0) {
-            cout << '\n' << "Your hand number " << i + 1 << " ties with Dealer" << '\n';
-        }
+        p.printProfit();
     }
     return;
 }
 
 void PlayBJ() {
+    cout << "How many players?" << '\n';
+    int n; cin >> n;
     Match match;
     match.dealer.hands[0].reset();
-    match.addPlayer(Player());
+    for (int i = 0; i < n; i++) {
+        match.addPlayer(i);
+    }
     match.deckReset();
     match.shuffle();
     match.deal2Card();

@@ -270,7 +270,7 @@ void SimulationXD(ofstream& file) {
     StatXD stat;
     match.dealer.hands[0].reset();
     for (int i = 0; i < n - 1; i++) {
-        match.addPlayer(Player());
+        match.addPlayer(i);
     }
     match.setPlayerCount();
     for (int z = 0; z < u; z++) {

@@ -85,7 +85,10 @@ bool dealerWantsToCheck(Hand& p, Hand& d) {
 
 int dealerWantsToAction(Match& match, Hand& d) {
     int s = d.getScore();
-    if (d.hand.size() == 5) return XETALL;
+    if (d.hand.size() == 5) {
+        
+        return XETALL;
+    }
     if (s < 15) return HIT; //obvious
     /* We have 2 options for strategies here:
     1: If there are players holding 4 cards and dealer has enough just score to check, check them
@@ -291,4 +294,172 @@ void SimulationXD(ofstream& file) {
     stat.setEVXD();
     stat.printStat();
     stat.exportStat(file);
+}
+
+void ProcessPlayPlayer(Match& match, Dealer& dealer) {
+    Hand& d = dealer.hands[0];
+    if (d.getHandType() == XIBANG || d.getHandType() == XIDACH) {
+        cout << "Dealer has ";
+        if (d.getHandType() == XIBANG) cout << "XIBANG!";
+        else cout << "XIDACH!";
+        cout << " The round ends now with results:" << '\n';
+        for (auto& p : match.players) {
+            cout << "Player no." << p.Pos << " hand:";
+            p.printHand();
+            int res = compareHands(p.hands[0], d);
+            PrintResultXD(match, p, dealer, res);
+        }
+        return;
+    }
+    for (auto& p : match.players) {
+        cout << "Player no." << p.Pos << " turn:" << '\n';
+        if (p.hands[0].getHandType() == XIDACH || p.hands[0].getHandType() == XIBANG) {
+            cout << "You have ";
+            if (d.getHandType() == XIBANG) cout << "XIBANG!";
+            else cout << "XIDACH!";
+            cout << '\n';
+            continue;
+        }
+        while (!p.hands[0].isBust && !p.hands[0].stood && p.hands[0].hand.size() < 5) {
+            p.hands[0].printHand();
+            if (p.hands[0].getScore() < 16) {
+                cout << "You must Hit! Press any key to Hit" << '\n' << "--> ";
+                char x; cin >> x;
+                HitPlay(match, p, p.hands[0], dealer);
+                continue;
+            }
+            cout << "Enter your choice: (H)it, (S)tand" << '\n' << "--> ";
+            char x; cin >> x;
+            if (x == 'H') {
+                HitPlay(match, p, p.hands[0], dealer);
+            }
+            else {
+                cout << "You stood!" << '\n';
+                p.hands[0].stood = true;
+                if (dealerWantsToCheck(p.hands[0], d)) {
+                    p.hands[0].toBeChecked = true;
+                }
+            }
+        }
+        if (p.hands[0].hand.size() == 5) {
+            if (p.hands[0].isBust) PrintPBust(p.hands[0]);
+            else {
+                cout << "You got NGULINH!";
+            }
+        }
+    }
+    for (auto& p : match.players) {
+        if (p.hands[0].toBeChecked) {
+            cout << "Dealer wants to check player no." << p.Pos << " before their turn!" << '\n';
+            int res = compareHands(p.hands[0], d);
+            PrintResultXD(match, p, dealer, res);
+            p.hands[0].setSolved();
+            match.deductPlayerCount();
+        }
+    }
+    while (match.getPlayerCount() != 0 || d.hand.size() < 5) {
+        dealer.printDealerHand();
+        if (d.isBust) {
+            cout << "Dealer Busted!" << '\n';
+            for (auto& p : match.players) {
+                if (!p.hands[0].resolved) {
+                    p.hands[0].setSolved();
+                    int res = compareHands(p.hands[0], d);
+                    PrintResultXD(match, p, dealer, res);
+                }
+            }
+            return;
+        }
+        else if (d.getHandType() == NGULINH) {
+            cout << "Dealer has NGULINH!" << '\n';
+            for (auto& p : match.players) {
+                if (!p.hands[0].resolved) {
+                    p.hands[0].setSolved();
+                    int res = compareHands(p.hands[0], d);
+                    PrintResultXD(match, p, dealer, res);
+                }
+            }
+        }
+        int action = dealerWantsToAction(match, d);
+        if (action == HIT) {
+            match.dealCardToHand(d);
+            d.printNewCard();
+            cout << '\n';
+            continue;
+        }
+        else if (action == 2 || action == 3) {
+            if (match.getPlayerCount() != 0) {
+                for (auto& p : match.players) {
+                    if (p.hands[0].hand.size() >= (action + 1) && !p.hands[0].resolved) {
+                        cout << "Dealer checks player no." << p.Pos <<  " hand: ";
+                        p.printHand();
+                        cout << '\n';
+                        match.deductPlayerCount();
+                        if (p.hands[0].hand.size() == 4) match.no4();
+                        if (p.hands[0].hand.size() == 3) match.no3();
+                        p.hands[0].setSolved();
+                        int res = compareHands(p.hands[0], d);
+                        PrintResultXD(match, p, dealer, res);
+                    }
+                }
+            }
+            continue;
+        }
+        else {
+            cout << "Dealer stood" << '\n';
+            dealer.stood = true;
+            dealer.printDealerHand();
+            for (auto& p : match.players) {
+                if (!p.hands[0].resolved) {
+                    cout << '\n' << "Dealer checks player no." << p.Pos << " hand: ";
+                    p.hands[0].printJustHand();
+                    p.hands[0].setSolved();
+                    int res = compareHands(p.hands[0], d);
+                    PrintResultXD(match, p, dealer, res);
+                }
+            }
+            break;
+        }
+    }
+}
+
+void ProcessPlayDealer(Match& match, Dealer& d) {
+
+}
+
+void PlayPlayer() {
+    cout << "How many players?" << '\n';
+    int n; cin >> n;
+    Match match;
+    match.dealer.hands[0].reset();
+    match.no3();
+    match.no4();
+    for (int i = 0; i < n; i++) {
+        match.addPlayer(i);
+    }
+    match.setPlayerCount();
+    match.deckReset();
+    match.shuffle();
+    match.deal2Card();
+
+    ProcessPlayPlayer(match, match.dealer);
+}
+
+void PlayDealer() {
+
+}
+
+void PlayXD() {
+    cout << "How many players?" << '\n';
+    int n; cin >> n;
+    Match match;
+    match.dealer.hands[0].reset();
+    for (int i = 0; i < n; i++) {
+        match.addPlayer(i);
+    }
+    match.deckReset();
+    match.shuffle();
+    match.deal2Card();
+
+    ProcessPlayPlayer(match, match.dealer);
 }

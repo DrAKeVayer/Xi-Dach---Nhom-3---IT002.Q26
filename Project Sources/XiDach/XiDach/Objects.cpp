@@ -126,6 +126,17 @@ void Hand::printHand() const {
     cout << getScore() << ")]" << '\n';
 }
 
+void Hand::printJustHand() const {
+    cout << "[";
+    for (int c : hand) {
+        cout << getRankName(c);
+        cout << getSuit(c) << ", ";
+    }
+    cout << "(";
+    if (isSoft) cout << " Soft ";
+    cout << getScore() << ")]" << '\n';
+}
+
 /*...................... PLAYER ........................*/
 Player::Player(int _p) : Pos(_p + 1) {
     hands.reserve(10);

@@ -17,6 +17,10 @@ bool dealerWantsToCheck(Hand& p, Hand& d);
 
 int dealerWantsToAction(Match& match, Hand& d);
 
-void ProcessPlayXD(Match& match, Dealer& d);
+void ProcessPlayPlayer(Match& match, Dealer& d);
 
-void PlayXD();
+void ProcessPlayDealer(Match& match, Dealer& d);
+
+void PlayPlayer();
+
+void PlayDealer();

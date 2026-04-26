@@ -48,7 +48,17 @@ int main() {
         cin >> choice;
 
         if (choice == 1) SimulationXD(file);
-        //else if (choice == 2) PlayXD();
+        else if (choice == 2) {
+            cout << R"(
+            Chosen Play
+            Type your mode:
+            1: You play as Players
+            2: You play as Dealer
+            )";
+            cin >> choice;
+            if (choice == 1) PlayPlayer();
+            else PlayDealer();
+        }
         return 0;
     }
     return 0;

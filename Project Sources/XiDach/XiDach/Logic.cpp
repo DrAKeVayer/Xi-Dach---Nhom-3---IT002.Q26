@@ -9,6 +9,8 @@ int compareHands(Hand& a, Hand& b) {
     HandType tb = b.getHandType();
     if (a.resolved) {
         if (a.isBust && b.isBust) return 0;
+        else if (a.isBust) return -1;
+        else if (b.isBust) return 1;
     }
     else {
         if (a.isBust) return -1;
@@ -83,4 +85,25 @@ void PrintResult(Match& match, Hand& h, Dealer& d, int res) {
     else if (res == 0) {
         cout << '\n' << "Your hand no." << h.Pos << " ties with Dealer" << '\n';
     }
+}
+
+void PrintResultXD(Match& match, Player& p, Dealer& d, int res) {
+    if (res == 1) {
+        cout << '\n' << "Congrats! Player no." << p.Pos << " beats the Dealer with hand: ";
+        p.hands[0].printJustHand();
+        p.upProfit(1.0);
+    }
+    else if (res == -1) {
+        cout << '\n' << "Oh no! Player no." << p.Pos << " loses to the Dealer with hand: ";
+        p.hands[0].printJustHand();
+        p.upProfit(-1.0);
+    }
+    else if (res == 0) {
+        cout << '\n' << "Player no." << p.Pos << " ties the Dealer with hand: ";
+        p.hands[0].printJustHand();
+    }
+}
+
+void PrintPBust(Hand& h) {
+    cout << "Your hand no." << h.Pos << " is Busted! Bad luck ..." << '\n';
 }

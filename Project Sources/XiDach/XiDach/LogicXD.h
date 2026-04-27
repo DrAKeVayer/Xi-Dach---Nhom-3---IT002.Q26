@@ -19,7 +19,13 @@ int dealerWantsToAction(Match& match, Hand& d);
 
 void ProcessPlayPlayer(Match& match, Dealer& d);
 
-void ProcessPlayDealer(Match& match, Dealer& d);
+void PrintState(Match& match);
+
+void PlayDealerCheckAll(Match& match, Dealer& dealer);
+
+void DealerOptions(Match& match, Dealer& dealer);
+
+void ProcessPlayDealer(Match& match, Dealer& dealer);
 
 void PlayPlayer();
 

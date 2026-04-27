@@ -10,7 +10,7 @@ void doResultXD(Hand& p, Hand& d, int& result, StatXD& stat) {
         //p.printHand();
         stat.upPWin();
         if (p.getHandType() == NGULINH) stat.upPNLWinCount();
-        if (p.getHandType() == XIDACH) stat.upPBJWin(); //wins due to BJ won't count for any stat below
+        else if (p.getHandType() == XIDACH) stat.upPBJWin(); //wins due to BJ won't count for any stat below
         else if (p.getHandType() == XIBANG) stat.upXBCount();
         else {
             stat.upDLoseAgainstPScore(p.getScore());
@@ -52,12 +52,12 @@ void doResultXD(Hand& p, Hand& d, int& result, StatXD& stat) {
         //p.printHand();
         stat.upDraw();
         if (d.getHandType() == XIDACH) stat.upBJDraw();
-        if (d.getHandType() == XIBANG) {
+        else if (d.getHandType() == XIBANG) {
             stat.upXBCount();
             stat.upXBCount();
             stat.upXBDrawCount();
         }
-        if (d.getHandType() == NGULINH) {
+        else if (d.getHandType() == NGULINH) {
             stat.upDNLCount();
         }
         stat.upPTotalHit(p.hand.size() - 2);
@@ -69,45 +69,38 @@ int playerWantsXD(Hand& p, Hand& d) { //Modify this to change the strategy of pl
       1: hit
     */
     p.calculateScore();
-    if (p.getScore() >= 21) return 0; //best possible score
-    if (p.getScore() <= 16) return 1; //always hit on 16, stand otherwise
-    if (p.isSoft && p.getScore() < 19) return 1; //always hit if soft hand < 19
+    if (p.getScore() >= 16) return 0;
+    if (p.getScore() <= 15) return 1;
+    // (p.isSoft && p.getScore() < 18) return 1;
     return 0;
 }
 
 bool dealerWantsToCheck(Hand& p, Hand& d) {
-    if (d.getScore() < 15) return STAND;
-    if (d.getScore() > 18) return XET; //dealer 19+ will always check hand;
-    if (p.hand.size() > 2 && d.getScore() > 16) return XET; //dealer 17+ will check player with 3+ cards hand
-    if (p.hand.size() > 3 && d.getScore() > 14) return XET;//dealer 15+ will check player with 4 cards hand
+    int ds = d.getScore();
+
+    if (ds >= 20) return XET;
+
+    if (ds >= 18)
+        return ((p.hand.size() == 3 || p.hand.size() == 4) ? XET : 0);
+
+    if (ds >= 15)
+        return (p.hand.size() == 4 ? XET : 0);
+
     return 0;
 }
 
 int dealerWantsToAction(Match& match, Hand& d) {
-    int s = d.getScore();
-    if (d.hand.size() == 5) {
-        
-        return XETALL;
-    }
-    if (s < 15) return HIT; //obvious
-    /* We have 2 options for strategies here:
-    1: If there are players holding 4 cards and dealer has enough just score to check, check them
-       Then for players holding 3 cards, dealer should have a threshold (e.g. 17) to check
-       Then for players who didn't hit, the threshold should be higher (e.g. 19+) to check
-       Uncomment to test/change this strategy
-       */
-       //if (match.get4() != 0) return XET4; //if checking all 4-card player, get4() will return 0, don't worry
-       //else if (match.get3() != 0 && s > 16) return XET3;
-       //else if (s > 18) return XET3;
-       //else if (!d.isBust) return HIT;
+    int ds = d.getScore();
 
-       // 2: "Dynamicly according to soft/hard hands as below"
-    if (d.isSoft && (s == 18 || s == 19)) return (match.get3() || match.get4() ? XET3 : HIT); //soft 18 19: check 3+ card hand, else hit ()
-    if (d.isSoft && (s == 20 || s == 21)) return XETALL; //soft 20 21: check all
-    if (d.isSoft && (s == 16 || s == 17)) return (match.get4() ? XET4 : HIT); //soft 16 17: check 4 card hand
-    if (!d.isSoft && (s >= 16 && s <= 18)) return (match.get4()) ? XET4 : HIT; //hard 16-18: check 4 card hand
-    if (!d.isSoft && (s >= 19 && s <= 21)) return XETALL; //hard 19-21: check all
-    return XETALL;
+    if (d.hand.size() == 5) return XETALL;
+
+    if (ds >= 18)
+        return ((match.get3() || match.get4()) ? XETALL : XETALL);
+
+    if (ds >= 15)
+        return (match.get4() ? XET : HIT);
+
+    return HIT;
 }
 
 void ProcessSimulationXD(Match& match, Dealer& dealer, StatXD& stat) {
@@ -304,8 +297,6 @@ void ProcessPlayPlayer(Match& match, Dealer& dealer) {
         else cout << "XIDACH!";
         cout << " The round ends now with results:" << '\n';
         for (auto& p : match.players) {
-            cout << "Player no." << p.Pos << " hand:";
-            p.printHand();
             int res = compareHands(p.hands[0], d);
             PrintResultXD(match, p, dealer, res);
         }
@@ -325,13 +316,13 @@ void ProcessPlayPlayer(Match& match, Dealer& dealer) {
             if (p.hands[0].getScore() < 16) {
                 cout << "You must Hit! Press any key to Hit" << '\n' << "--> ";
                 char x; cin >> x;
-                HitPlay(match, p, p.hands[0], dealer);
+                HitPlay(match, p.hands[0]);
                 continue;
             }
             cout << "Enter your choice: (H)it, (S)tand" << '\n' << "--> ";
             char x; cin >> x;
             if (x == 'H') {
-                HitPlay(match, p, p.hands[0], dealer);
+                HitPlay(match, p.hands[0]);
             }
             else {
                 cout << "You stood!" << '\n';
@@ -423,7 +414,103 @@ void ProcessPlayPlayer(Match& match, Dealer& dealer) {
     }
 }
 
-void ProcessPlayDealer(Match& match, Dealer& d) {
+void PlayDealerCheckAll(Match& match, Dealer& dealer) {
+    Hand& d = dealer.hands[0];
+    for (auto& p : match.players) {
+        if (!p.hands[0].resolved) {
+            cout << '\n' << "You check player no." << p.Pos << " hand: ";
+            p.hands[0].printJustHand();
+            p.hands[0].setSolved();
+            match.deductPlayerCount();
+            int res = compareHands(p.hands[0], d);
+            PrintResultXD(match, p, dealer, res);
+        }
+    }
+}
+
+void PrintState(Match& match) {
+    cout << "All players' hands composition:" << '\n';
+    for (auto& p : match.players) {
+        if (!p.hands[0].resolved)
+            cout << "Player no." << p.Pos << " hand size: " << p.hands[0].hand.size() << '\n';
+    }
+}
+
+void DealerOptions(Match& match, Dealer& dealer) {
+    Hand& d = dealer.hands[0];
+    if (d.getScore() >= 15) {
+        string x;
+        cout << "Enter your choice: Number: Check that player, (H)it, (S)tand" << '\n' << "--> ";
+        cin >> x;
+        if (x == "H") {
+            HitPlay(match, d);
+        }
+        else if (x == "S") {
+            cout << "You stood! Now checking all." << '\n';
+            PlayDealerCheckAll(match, dealer);
+            dealer.stood = true;
+        }
+        else {
+            for (auto& p : match.players) {
+                if (!p.hands[0].resolved && p.Pos == stoi(x)) {
+                    cout << '\n' << "You checks player no." << p.Pos << " hand: ";
+                    p.hands[0].printJustHand();
+                    p.hands[0].setSolved();
+                    match.deductPlayerCount();
+                    int res = compareHands(p.hands[0], d);
+                    PrintResultXD(match, p, dealer, res);
+                }
+            }
+        }
+    }
+    else {
+        cout << "You must Hit! Press any key to Hit." << '\n' << "--> ";
+        char x; cin >> x;
+        HitPlay(match, d);
+    }
+}
+
+void ProcessPlayDealer(Match& match, Dealer& dealer) {
+    Hand& d = dealer.hands[0];
+    if (d.getHandType() == XIBANG || d.getHandType() == XIDACH) {
+        cout << "Dealer has ";
+        if (d.getHandType() == XIBANG) cout << "XIBANG!";
+        else cout << "XIDACH!";
+        cout << " The round ends now with results:" << '\n';
+        for (auto& p : match.players) {
+            int res = compareHands(p.hands[0], d);
+            PrintResultXD(match, p, dealer, res);
+        }
+        cout << "The round ends now!";
+        return;
+    }
+
+    for (auto& p : match.players) {
+        while (true) {
+            if (p.hands[0].getHandType() == XIDACH || p.hands[0].getHandType() == XIBANG) break;
+            int action = playerWantsXD(p.hands[0], d);
+            if (action == 1) {
+                match.dealCardToHand(p.hands[0]);
+                continue;
+            }
+            if (action == 0) {
+                break;
+            }
+        }
+    }
+    cout << "All players have completed their turn" << '\n';
+    while (!d.stood && match.getPlayerCount() != 0 ) {
+        if (d.isBust) {
+            cout << "Now checking all:" << '\n';
+            PlayDealerCheckAll(match, dealer);
+            cout << "The round ends now!";
+            return;
+        }
+        PrintState(match);
+        cout << "Your hand is: ";
+        d.printJustHand(); 
+        DealerOptions(match, dealer);
+    }
 
 }
 
@@ -446,7 +533,21 @@ void PlayPlayer() {
 }
 
 void PlayDealer() {
+    cout << "How many players?" << '\n';
+    int n; cin >> n;
+    Match match;
+    match.dealer.hands[0].reset();
+    match.no3();
+    match.no4();
+    for (int i = 0; i < n; i++) {
+        match.addPlayer(i);
+    }
+    match.setPlayerCount();
+    match.deckReset();
+    match.shuffle();
+    match.deal2Card();
 
+    ProcessPlayDealer(match, match.dealer);
 }
 
 void PlayXD() {

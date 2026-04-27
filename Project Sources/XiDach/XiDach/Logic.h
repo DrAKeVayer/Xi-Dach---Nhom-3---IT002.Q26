@@ -7,7 +7,7 @@
 
 int compareHands(Hand& a, Hand& b);
 
-void HitPlay(Match& match, Player& p, Hand& h, Dealer& d);
+void HitPlay(Match& match, Hand& h);
 void InsurePlay(Match& match, Player& p, Hand& h, Dealer& d);
 void SplitPlay(Match& match, Player& p, Hand& h, Dealer& d);
 void SurrenderPlay(Match& match, Player& p, Hand& h, Dealer& d);

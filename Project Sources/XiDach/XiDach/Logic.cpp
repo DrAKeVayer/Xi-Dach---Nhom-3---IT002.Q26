@@ -30,9 +30,10 @@ int compareHands(Hand& a, Hand& b) {
     return 0; //Tie
 }
 
-void HitPlay(Match& match, Player& p, Hand& h, Dealer& d) {
+void HitPlay(Match& match, Hand& h) {
     match.dealCardToHand(h);
     h.printNewCard();
+    h.printHand();
     if (h.isBust) {
         PrintPBust(h);
     }

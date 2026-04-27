@@ -51,7 +51,7 @@ int main() {
         else if (choice == 2) {
             cout << R"(
             Chosen Play
-            Type your mode:
+            Type your role:
             1: You play as Players
             2: You play as Dealer
             )";

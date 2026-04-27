@@ -715,8 +715,8 @@ void StatXD::printStat() {
     cout << "Against player's hand that has 2 - 4 cards" << '\n';
     for (int i = 2; i < 5; i++) cout << DCheckLoseAgainstSizePostTurn[i] << " - ";
 
-    cout << '\n' << "Dealer wins at final check (including against NGULINH) " << DLastWin << " hands total" << '\n';
-    cout << "Dealer loses at final check (including against NGULINH) " << DLastLose << " hands total" << '\n';
+    cout << '\n' << "Dealer wins when checking ALL (including against NGULINH) " << DLastWin << " hands total" << '\n';
+    cout << "Dealer loses when checking ALL (including against NGULINH) " << DLastLose << " hands total" << '\n';
 
     cout << "There are " << XBCount << " XIBANG hands total" << '\n';
     cout << "XIBANG tie " << XBDrawCount << " times total" << '\n';

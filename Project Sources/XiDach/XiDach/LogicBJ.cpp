@@ -304,7 +304,7 @@ void Options(Match& match, Player& p, Hand& h, Dealer& d, int x) {
     if (i == 'U') SurrenderPlay(match, p, h, d);
     else if (i == 'P') SplitPlay(match, p, h, d);
     else if (i == 'D') DoublePlay(match, p, h, d);
-    else if (i == 'H') HitPlay(match, p, h, d);
+    else if (i == 'H') HitPlay(match, h);
     else if (i == 'S') StandPlay(match, p, h, d);
 }
 

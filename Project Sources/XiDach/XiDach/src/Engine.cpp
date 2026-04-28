@@ -1,10 +1,70 @@
-#include "Objects.h"
 #include "Constants.h"
-#include "Logic.h"
-#include "LogicBJ.h"
-#include "LogicXD.h"
+#include "Engine.h"
+#include "Entities.h"
 
-int compareHands(Hand& a, Hand& b) {
+Match::Match() : dealer(0) {
+    players.reserve(15);
+    deckInit();
+    shuffle();
+}
+
+void Match::addPlayer(int i) {
+    players.emplace_back(Player(i));
+}
+
+void Match::deckInit() {
+    deck.clear();
+    for (int i = 1; i < 53; i++) {
+        deck.push_back(i);
+    }
+}
+
+void Match::shuffle() {
+    static unsigned seed = static_cast<unsigned>(
+        chrono::high_resolution_clock::now().time_since_epoch().count()
+        );
+    static mt19937 gen(seed);
+
+    std::shuffle(deck.begin(), deck.end(), gen);
+}
+
+void Match::deckReset() {
+    cardIdx = 0;
+}
+
+int Match::drawCard() {
+    int card = deck[cardIdx++];
+    if (cardIdx > 51) {
+        deckInit();
+        shuffle();
+        cardIdx = 0;
+    }
+    return card;
+}
+
+void Match::dealCardToPlayer(Player& p, int x) {
+    p.hands[x].receiveCard(drawCard());
+    p.hands[x].calculateScore();
+}
+
+void Match::dealCardToHand(Hand& h) {
+    h.receiveCard(drawCard());
+    h.calculateScore();
+}
+
+void Match::deal2Card() {
+    for (Player& p : players) {
+        p.hands[0].hand.push_back(drawCard());
+        p.hands[0].hand.push_back(drawCard());
+        p.hands[0].calculateScore();
+    }
+
+    dealer.hands[0].hand.push_back(drawCard());
+    dealer.hands[0].hand.push_back(drawCard());
+    dealer.hands[0].calculateScore();
+}
+
+int Match::compareHands(Hand& a, Hand& b) {
     HandType ta = a.getHandType();
     HandType tb = b.getHandType();
     if (a.resolved) {
@@ -30,8 +90,8 @@ int compareHands(Hand& a, Hand& b) {
     return 0; //Tie
 }
 
-void HitPlay(Match& match, Hand& h) {
-    match.dealCardToHand(h);
+void Match::HitPlay(Hand& h) {
+    dealCardToHand(h);
     h.printNewCard();
     h.printHand();
     if (h.isBust) {
@@ -39,42 +99,13 @@ void HitPlay(Match& match, Hand& h) {
     }
     return;
 }
-void InsurePlay(Match& match, Player& p, Hand& h, Dealer& d) {
-    if (d.hands[0].getHandType() == XIDACH) {
-        cout << "Success! Dealer has BlackJack and you break even this round" << '\n';
-        h.upProfit(1.0);
-    }
-    else {
-        cout << "Fail! Dealer doesn't have BlackJack. You lost 0.5x bet" << '\n';
-        h.upProfit(-0.5);
-    }
-    return;
-}
-void SplitPlay(Match& match, Player& p, Hand& h, Dealer& d) {
-    cout << "You splited your hand number " << h.Pos << " and drew 2 new cards for each" << '\n';
-    match.splitTo(p, (h.Pos - 1));
-    PrintState(match, p, d);
-    return;
-}
-void SurrenderPlay(Match& match, Player& p, Hand& h, Dealer& d) {
-    cout << "You surrendered your hand and lost 0.5x bet" << '\n';
-    h.surrendered = true;
-}
-void StandPlay(Match& match, Player& p, Hand& h, Dealer& d) {
+
+void Match::StandPlay(Player& p, Hand& h, Dealer& d) {
     cout << "You stood your hand number " << h.Pos << '\n';
     h.stood = true;
 }
-void DoublePlay(Match& match, Player& p, Hand& h, Dealer& d) {
-    cout << "You doubled down your current hand." << '\n';
-    h.isDoubled = true;
-    match.dealCardToHand(h);
-    h.printNewCard();
-    if (h.isBust) {
-        PrintPBust(h);
-    }
-}
 
-void PrintResult(Match& match, Hand& h, Dealer& d, int res) {
+void Match::PrintResult(Hand& h, Dealer& d, int res) {
     if (res == 1) {
         cout << '\n' << "Congrats! Your hand no." << h.Pos << " beats the Dealer!" << '\n';
         h.upProfit(1.0);
@@ -88,7 +119,7 @@ void PrintResult(Match& match, Hand& h, Dealer& d, int res) {
     }
 }
 
-void PrintResultXD(Match& match, Player& p, Dealer& d, int res) {
+void Match::PrintResultXD(Player& p, Dealer& d, int res) {
     if (res == 1) {
         cout << '\n' << "Congrats! Player no." << p.Pos << " beats the Dealer with hand: ";
         p.hands[0].printJustHand();
@@ -105,6 +136,11 @@ void PrintResultXD(Match& match, Player& p, Dealer& d, int res) {
     }
 }
 
-void PrintPBust(Hand& h) {
+void Match::PrintState(Player& p, Dealer& d) {
+    cout << "Current state: " << '\n';
+    d.printDealerFirstHand();
+}
+
+void Match::PrintPBust(Hand& h) {
     cout << "Your hand no." << h.Pos << " is Busted! Bad luck ..." << '\n';
 }

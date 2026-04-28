@@ -1,8 +1,8 @@
-#include "Objects.h"
 #include "Constants.h"
-#include "Logic.h"
-#include "LogicBJ.h"
-#include "LogicXD.h"
+#include "Entities.h"
+#include "MatchBJ.h"
+#include "MatchXD.h"
+#include "Stats.h"
 
 using namespace std;
 
@@ -33,9 +33,9 @@ int main() {
         2: Play
         )";
         cin >> choice;
-
-        if (choice == 1) SimulationBJ(file);
-        else if (choice == 2) PlayBJ();
+        MatchBJ match;
+        if (choice == 1) match.SimulationBJ(file);
+        else if (choice == 2) match.PlayBJ();
         return 0;
     }
     else if (choice == 2) {
@@ -46,8 +46,8 @@ int main() {
         2: Play
         )";
         cin >> choice;
-
-        if (choice == 1) SimulationXD(file);
+        MatchXD match;
+        if (choice == 1) match.SimulationXD(file);
         else if (choice == 2) {
             cout << R"(
             Chosen Play
@@ -56,8 +56,8 @@ int main() {
             2: You play as Dealer
             )";
             cin >> choice;
-            if (choice == 1) PlayPlayer();
-            else PlayDealer();
+            if (choice == 1) match.PlayPlayer();
+            else match.PlayDealer();
         }
         return 0;
     }

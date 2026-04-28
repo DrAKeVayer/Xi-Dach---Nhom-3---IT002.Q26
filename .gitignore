@@ -1,5 +1,7 @@
 # Prerequisites
 *.d
+*.csv
+*.xlsx
 
 # Compiled Object files
 *.slo
@@ -39,3 +41,33 @@
 
 # debug information files
 *.dwo
+
+# --- Visual Studio Temporary Files ---
+.vs/
+ipch/
+*.aps
+*.intermediate.obj
+*.lastbuildstate
+*.tlog
+*.unsuccessfulbuild
+*.vsidx
+*.vstmp
+*.VC.db
+*.VC.opendb
+
+# --- Build Output (Cái này quan trọng nhất) ---
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+bin/
+obj/
+
+# --- User-specific files ---
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# --- Others ---
+*.log

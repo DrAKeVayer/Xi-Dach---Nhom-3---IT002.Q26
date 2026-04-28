@@ -325,6 +325,8 @@ protected:
     int PSplitWinRank[11] = {0};
     int PSplitWinVSup[11] = {0};
     int PSplitLoseVSup[11] = {0};
+
+    
 public:
     void upPWinDBust() { PWinDBust++; }
     void upPLose16() { PLose16++; }

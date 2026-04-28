@@ -358,8 +358,6 @@ public:
     }
 };
 
-#include <iostream>
-using namespace std;
 class Stat {
 protected:
     int PWin = 0;

@@ -46,16 +46,32 @@ int main() {
         2: Play
         )";
         cin >> choice;
-        MatchXD match;
-        if (choice == 1) match.SimulationXD(file);
+        if (choice == 1) {
+            cout << R"(
+            Chosen Simulation for Xi Dach
+            Type your style:
+            1: Fixed strategies
+            2: Probability-based, auto-adjust strategies
+            )";
+            cin >> choice;
+            if (choice == 1) {
+                MatchXD match;
+                match.SimulationXD(file);
+            }
+            else if (choice == 2) {
+                MatchXDAI match;
+                match.SimulationXD(file);
+            }
+        }
         else if (choice == 2) {
             cout << R"(
-            Chosen Play
+            Chosen Play for Xi Dach
             Type your role:
             1: You play as Players
             2: You play as Dealer
             )";
             cin >> choice;
+            MatchXD match;
             if (choice == 1) match.PlayPlayer();
             else match.PlayDealer();
         }

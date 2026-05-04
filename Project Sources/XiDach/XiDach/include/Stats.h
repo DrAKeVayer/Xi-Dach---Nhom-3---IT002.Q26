@@ -173,6 +173,18 @@ protected:
     int DNLWinCount = 0;
     int NLDrawCount = 0;
 
+    int PHitAtHard[3][22] = { 0 };
+    int PStandAtHard[3][22] = { 0 };
+    int PHitAtSoft[3][22] = { 0 };
+    int PStandAtSoft[3][22] = { 0 };
+    int PWinHitAtHard[3][22] = { 0 };
+    int PWinStandAtHard[3][22] = { 0 };
+    int PWinHitAtSoft[3][22] = { 0 };
+    int PWinStandAtSoft[3][22] = { 0 };
+
+    int CurrentRound = 0;
+    vector<double> EVXDres;
+
     double EVXD = 0;
 public:
     void upTotalCheck();
@@ -200,9 +212,23 @@ public:
     void upPNLWinCount();
     void upDNLWinCount();
     void upNLDrawCount();
+
+    void upPHitAtHard(int card, int score);
+    void upPStandAtHard(int card, int score);
+    void upPHitAtSoft(int card, int score);
+    void upPStandAtSoft(int card, int score);
+    void upPWinHitAtHard(int card, int score);
+    void upPWinStandAtHard(int card, int score);
+    void upPWinHitAtSoft(int card, int score);
+    void upPWinStandAtSoft(int card, int score);
+    void ResetProb();
+    void upCurrentRound();
+
     void setEVXD();
 
+    void printEVXD();
     void printStat() override;
 
     void exportStat(ofstream& file) override;
+    friend class MatchXDAI;
 };

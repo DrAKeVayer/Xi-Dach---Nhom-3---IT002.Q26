@@ -1,4 +1,4 @@
-#include "constants.h"
+#include "Constants.h"
 int rankTable[53];
 string rankName[53];
 
@@ -38,6 +38,14 @@ string getRankName(int x) {
     if (rank == 13) return "K";
 
     return to_string(rank);
+}
+
+bool Chance(double x) {
+    static random_device rd;
+    static mt19937 gen(rd());
+    static uniform_real_distribution<double> dist(0.0, 1.0);
+
+    return dist(gen) < x;
 }
 
 string getFileName(const string& base, const string& csv) {

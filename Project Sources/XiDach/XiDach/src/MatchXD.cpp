@@ -25,10 +25,25 @@ void MatchXD::doResultXD(Hand& p, Hand& d, int& result, StatXD& stat) {
         //cout << '\n' << "Player wins with hand: " << '\n';
         //p.printHand();
         stat.upPWin();
-        if (p.getHandType() == NGULINH) stat.upPNLWinCount();
+        if (p.getHandType() == NGULINH) {
+            stat.upPNLWinCount();
+            for (int i = 0; i < 3; i++) {
+                for (int j = 16; j < 19; j++) {
+                    if (p.HitHard[i][j] == 1) stat.upPWinHitAtHard(i, j);
+                }
+            }
+        }
         else if (p.getHandType() == XIDACH) stat.upPBJWin(); //wins due to BJ won't count for any stat below
         else if (p.getHandType() == XIBANG) stat.upXBCount();
         else {
+            for (int i = 0; i < 3; i++) {
+                for (int j = 16; j < 19; j++) {
+                    if (p.HitHard[i][j] == 1) stat.upPWinHitAtHard(i, j);
+                    if (p.StandHard[i][j] == 1) stat.upPWinStandAtHard(i, j);
+                    if (p.HitSoft[i][j] == 1) stat.upPWinHitAtSoft(i, j);
+                    if (p.StandSoft[i][j] == 1) stat.upPWinStandAtSoft(i, j);
+                }
+            }
             stat.upDLoseAgainstPScore(p.getScore());
             stat.upDLoseAgainstPFirst2Score(p.first2Score);
             if (p.getScore() == 16) stat.upPWin16();
@@ -80,7 +95,7 @@ void MatchXD::doResultXD(Hand& p, Hand& d, int& result, StatXD& stat) {
     }
 }
 
-int MatchXD::playerWantsXD(Hand& p, Hand& d) { //Modify this to change the strategy of players.
+int MatchXD::playerWantsXD(Hand& p, Hand& d, StatXD& stat) { //Modify this to change the strategy of players.
     /*0: stand
       1: hit
     */
@@ -147,7 +162,7 @@ void MatchXD::ProcessSimulationXD(Dealer& dealer, StatXD& stat) {
                 break;
             }
             if (p.hands[0].getHandType() == XIDACH || p.hands[0].getHandType() == XIBANG) break;
-            int action = playerWantsXD(p.hands[0], d);
+            int action = playerWantsXD(p.hands[0], d, stat);
             if (action == 1) {
                 dealCardToHand(p.hands[0]);
                 if (p.hands[0].isBust) stat.upPBust();
@@ -485,7 +500,7 @@ void MatchXD::DealerOptions(Dealer& dealer) {
     }
 }
 
-void MatchXD::ProcessPlayDealer(Dealer& dealer) {
+void MatchXD::ProcessPlayDealer(Dealer& dealer, StatXD& stat) {
     Hand& d = dealer.hands[0];
     if (d.getHandType() == XIBANG || d.getHandType() == XIDACH) {
         cout << "Dealer has ";
@@ -503,7 +518,7 @@ void MatchXD::ProcessPlayDealer(Dealer& dealer) {
     for (auto& p : players) {
         while (true) {
             if (p.hands[0].getHandType() == XIDACH || p.hands[0].getHandType() == XIBANG) break;
-            int action = playerWantsXD(p.hands[0], d);
+            int action = playerWantsXD(p.hands[0], d, stat);
             if (action == 1) {
                 dealCardToHand(p.hands[0]);
                 continue;
@@ -550,6 +565,7 @@ void MatchXD::PlayPlayer() {
 void MatchXD::PlayDealer() {
     cout << "How many players?" << '\n';
     int n; cin >> n;
+    StatXD stat;
     Match match;
     match.dealer.hands[0].reset();
     no3();
@@ -562,7 +578,7 @@ void MatchXD::PlayDealer() {
     match.shuffle();
     match.deal2Card();
 
-    ProcessPlayDealer(dealer);
+    ProcessPlayDealer(dealer, stat);
 }
 
 void MatchXD::PlayXD() {
@@ -577,4 +593,201 @@ void MatchXD::PlayXD() {
     deal2Card();
 
     ProcessPlayPlayer(dealer);
+}
+
+void MatchXDAI::LateLearning(StatXD& stat) {
+    stat.setEVXD();
+    stat.EVXDres.push_back(stat.EVXD);
+    for (int s = 16; s <= 18; s++) {      // s là điểm: 16, 17, 18
+        for (int c = 2; c <= 4; c++) {    // c là số lá: 2, 3, 4
+            int row = s - 16;
+            int col = c - 2;
+
+            if (stat.PHitAtHard[col][s] > 0 && stat.PStandAtHard[col][s] > 0) {
+                bool winRate = (((double)stat.PWinHitAtHard[col][s] / stat.PHitAtHard[col][s]))
+    > (((double)stat.PWinStandAtHard[col][s] / stat.PStandAtHard[col][s]));
+    if (winRate > 1.0) HardHitTable[row][col] += mult;
+    else              HardHitTable[row][col] -= mult;
+
+    if (HardHitTable[row][col] > 1.0) HardHitTable[row][col] = 1.0;
+    if (HardHitTable[row][col] < 0.0) HardHitTable[row][col] = 0.0;
+            }
+
+            if (stat.PHitAtSoft[col][s] > 0 && stat.PStandAtSoft[col][s] > 0) {
+                bool winRate = (((double)stat.PWinHitAtSoft[col][s] / stat.PHitAtSoft[col][s]))
+                    / (((double)stat.PWinStandAtSoft[col][s] / stat.PStandAtSoft[col][s]));
+
+                if (winRate) SoftHitTable[row][col] += mult;
+                else              SoftHitTable[row][col] -= mult;
+
+                if (SoftHitTable[row][col] > 1.0) SoftHitTable[row][col] = 1.0;
+                if (SoftHitTable[row][col] < 0.0) SoftHitTable[row][col] = 0.0;
+            }
+        }
+    }
+    Hard.push_back(HardHitTable);
+    Soft.push_back(SoftHitTable);
+    mult *= 0.985; //0.1 reduced slowly
+}
+
+void MatchXDAI::FirstLearning(StatXD& stat) {
+    stat.setEVXD();
+    stat.EVXDres.push_back(stat.EVXD);
+    for (int s = 16; s <= 18; s++) {      // s là điểm: 16, 17, 18
+        for (int c = 2; c <= 4; c++) {    // c là số lá: 2, 3, 4
+            int row = s - 16;
+            int col = c - 2;
+
+            if (stat.PHitAtHard[col][s] > 0 && stat.PStandAtHard[col][s] > 0) {
+                bool winRate = (((double)stat.PWinHitAtHard[col][s] / stat.PHitAtHard[col][s]))
+                                 > (((double)stat.PWinStandAtHard[col][s] / stat.PStandAtHard[col][s]));
+                if (winRate > 1.0) HardHitTable[row][col] += mult;
+                else              HardHitTable[row][col] -= mult;
+
+                if (HardHitTable[row][col] > 0.9) HardHitTable[row][col] = 0.9;
+                if (HardHitTable[row][col] < 0.1) HardHitTable[row][col] = 0.1;
+            }
+
+            if (stat.PHitAtSoft[col][s] > 0 && stat.PStandAtSoft[col][s] > 0) {
+                bool winRate = (((double)stat.PWinHitAtSoft[col][s] / stat.PHitAtSoft[col][s]))
+                                / (((double)stat.PWinStandAtSoft[col][s] / stat.PStandAtSoft[col][s]));
+
+                if (winRate) SoftHitTable[row][col] += mult;
+                else              SoftHitTable[row][col] -= mult;
+
+                if (SoftHitTable[row][col] > 0.9) SoftHitTable[row][col] = 0.9;
+                if (SoftHitTable[row][col] < 0.1) SoftHitTable[row][col] = 0.1;
+            }
+        }
+    }
+    Hard.push_back(HardHitTable);
+    Soft.push_back(SoftHitTable);
+    mult *= 0.985; //0.1 reduced slowly
+}
+
+void MatchXDAI::PrintTable(StatXD& stat) const {
+    cout << "Hard Hit Table at round " << stat.CurrentRound << ":";
+    for (int s = 16; s <= 18; s++) {      // s là điểm: 16, 17, 18
+        for (int c = 2; c <= 4; c++) {    // c là số lá: 2, 3, 4
+            int row = s - 16;
+            int col = c - 2;
+            cout << HardHitTable[row][col] << " - ";
+        }
+        cout << '\n';
+    }
+    cout << "Soft Hit Table at round " << stat.CurrentRound << ":";
+    for (int s = 16; s <= 18; s++) {      // s là điểm: 16, 17, 18
+        for (int c = 2; c <= 4; c++) {    // c là số lá: 2, 3, 4
+            int row = s - 16;
+            int col = c - 2;
+            cout << SoftHitTable[row][col] << " - ";
+        }
+        cout << '\n';
+    }
+    cout << "Current cummulative EV: " << stat.EVXD << '\n';
+}
+
+int MatchXDAI::playerWantsXD(Hand& p, Hand& d, StatXD& stat) {
+    int ps = p.getScore();
+    int hs = p.hand.size();
+    if (ps < 16) return HIT;
+    if (ps > 18) return STAND;
+    if (!p.isSoft && ps >= 16 && ps <= 18) {
+        int r = Chance(HardHitTable[ps - 16][hs - 2]);
+        if (r == 1) {
+            p.HitHard[ps - 16][hs - 2] = 1;
+            stat.upPHitAtHard(hs - 2, ps);
+        }
+        else {
+            p.StandHard[ps - 16][hs - 2] = 1;
+            stat.upPStandAtHard(hs - 2, ps);
+        }
+        return r;
+    }
+    else if (p.isSoft && ps >= 16 && ps <= 18) {
+        int r = Chance(SoftHitTable[ps - 16][hs - 2]);
+        if (r == 1) {
+            p.HitSoft[ps - 16][hs - 2] = 1;
+            stat.upPHitAtSoft(hs - 2, ps);
+        }
+        else {
+            p.StandSoft[ps - 16][hs - 2] = 1;
+            stat.upPStandAtSoft(hs - 2, ps);
+        }
+        return r;
+    }
+}
+
+bool MatchXDAI::dealerWantsToCheck(Hand& p, Hand& d) {
+    int ds = d.getScore();
+
+    if (ds >= 20) return XET;
+
+    if (ds >= 18)
+        return ((p.hand.size() == 3 || p.hand.size() == 4) ? XET : 0);
+
+    if (ds >= 15)
+        return (p.hand.size() == 4 ? XET : 0);
+
+    return 0;
+}
+
+int MatchXDAI::dealerWantsToAction(Hand& d) {
+    int ds = d.getScore();
+
+    if (d.hand.size() == 5) return XETALL;
+
+    if (ds >= 18)
+        return ((get3() || get4()) ? XETALL : XETALL);
+
+    if (ds >= 15)
+        return (get4() ? XET : HIT);
+
+    return HIT;
+}
+
+void MatchXDAI::SimulationXD(ofstream& file) {
+    cout << "How many players (including dealer)?" << '\n';
+    int n; cin >> n;
+    cout << "How many Matches?" << '\n';
+    int u; cin >> u;
+
+    StatXD stat;
+    Hard.reserve(60);
+    Soft.reserve(60);
+    dealer.hands[0].reset();
+    for (int i = 0; i < n - 1; i++) {
+        addPlayer(i);
+    }
+    setPlayerCount();
+    for (int z = 0; z < u; z++) {
+        stat.upCurrentRound();
+        deckReset();
+        shuffle();
+        no3();
+        no4();
+        dealer.hands[0].reset();
+        for (auto& p : players) {
+            p.resetPlayer();
+        }
+
+        deal2Card();
+
+        ProcessSimulationXD(dealer, stat);
+        
+        if ((z + 1) % 100000 == 0 && (double(z) / u < 0.89)) {
+            FirstLearning(stat);
+            //PrintTable(stat);
+            stat.ResetProb();
+        }
+        else if ((z + 1) % 100000 == 0 && (double(z) / u >= 0.89)) {
+            LateLearning(stat);
+            //PrintTable(stat);
+            stat.ResetProb();
+        }
+    }
+    cout << '\n';
+    stat.setEVXD();
+    stat.printStat();
+    stat.exportStat(file);
 }

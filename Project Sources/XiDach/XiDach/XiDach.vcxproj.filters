@@ -15,69 +15,51 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Constants.h">
+    <ClInclude Include="include\Engine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Objects.h">
+    <ClInclude Include="include\Entities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Logic.h">
+    <ClInclude Include="include\MatchBJ.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LogicXD.h">
+    <ClInclude Include="include\MatchXD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LogicBJ.h">
+    <ClInclude Include="include\Stats.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Entities.h">
+    <ClInclude Include="include\Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Stats.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MatchBJ.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MatchXD.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine.h">
+    <ClInclude Include="MatchXD_AI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Constants.cpp">
+    <ClCompile Include="src\Engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Logic.cpp">
+    <ClCompile Include="src\Entities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LogicBJ.cpp">
+    <ClCompile Include="src\MatchBJ.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LogicXD.cpp">
+    <ClCompile Include="src\MatchXD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Stats.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Objects.cpp">
+    <ClCompile Include="src\Constants.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MatchBJ.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MatchXD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Entites.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Stats.cpp">
+    <ClCompile Include="MatchXD_AI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

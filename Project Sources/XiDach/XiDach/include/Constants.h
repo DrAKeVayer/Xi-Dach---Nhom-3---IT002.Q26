@@ -6,10 +6,9 @@
 #include <algorithm>
 #include <random>
 #include <chrono>
-#include <iomanip>
 #include <fstream>
 #include <windows.h> //for printing unicode symbols
-#include <functional>
+#include <array>
 
 using namespace std;
 
@@ -23,6 +22,10 @@ string getSuit(int x);
 void initRankName(string rankName[]);
 
 string getRankName(int x);
+
+bool Chance(double x);
+
+using Table3x3 = array<array<double, 3>, 3>;
 
 enum HandType {
     THUONG = 0,

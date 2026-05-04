@@ -1,5 +1,5 @@
 #pragma once
-#include "constants.h"
+#include "Constants.h"
 using namespace std;
 class Player;
 
@@ -27,6 +27,28 @@ public:
     bool surrendered = false;
     bool stood = false;
     bool toBeChecked = false;
+
+    int HitHard[3][3] = {
+            {0, 0, 0}, // 16 điểm (2, 3, 4 lá)
+            {0, 0, 0}, // 17 điểm
+            {0, 0, 0} // 18 điểm
+    };
+    int HitSoft[3][3] = {
+            {0, 0, 0}, // 16 điểm (2, 3, 4 lá)
+            {0, 0, 0}, // 17 điểm
+            {0, 0, 0} // 18 điểm
+    };
+    int StandHard[3][3] = {
+            {0, 0, 0}, // 16 điểm (2, 3, 4 lá)
+            {0, 0, 0}, // 17 điểm
+            {0, 0, 0} // 18 điểm
+    };
+    int StandSoft[3][3] = {
+            {0, 0, 0}, // 16 điểm (2, 3, 4 lá)
+            {0, 0, 0}, // 17 điểm
+            {0, 0, 0} // 18 điểm
+    };
+
 
     Hand(Player* _p, int _C);
 

@@ -367,10 +367,37 @@ void StatXD::upPNLWinCount() { PNLWinCount++; }
 void StatXD::upDNLWinCount() { DNLWinCount++; }
 void StatXD::upNLDrawCount() { NLDrawCount++; }
 
+void StatXD::upPWinHitAtHard(int card, int score) { PWinHitAtHard[card][score]++; }
+void StatXD::upPWinStandAtHard(int card, int score) { PWinStandAtHard[card][score]++; }
+void StatXD::upPWinHitAtSoft(int card, int score) { PWinHitAtSoft[card][score]++; }
+void StatXD::upPWinStandAtSoft(int card, int score) { PWinStandAtSoft[card][score]++; }
+void StatXD::upPHitAtHard(int card, int score) { PHitAtHard[card][score]++; }
+void StatXD::upPStandAtHard(int card, int score) { PStandAtHard[card][score]++; }
+void StatXD::upPHitAtSoft(int card, int score) { PHitAtSoft[card][score]++; }
+void StatXD::upPStandAtSoft(int card, int score) { PStandAtSoft[card][score]++; }
+
+void StatXD::ResetProb() {
+    memset(PHitAtHard, 0, sizeof(PHitAtHard));
+    memset(PStandAtHard, 0, sizeof(PStandAtHard));
+    memset(PHitAtSoft, 0, sizeof(PHitAtSoft));
+    memset(PStandAtSoft, 0, sizeof(PStandAtSoft));
+    memset(PWinHitAtHard, 0, sizeof(PWinHitAtHard));
+    memset(PWinStandAtHard, 0, sizeof(PWinStandAtHard));
+    memset(PWinHitAtSoft, 0, sizeof(PWinHitAtSoft));
+    memset(PWinStandAtSoft, 0, sizeof(PWinStandAtSoft));
+}
+
+void StatXD::upCurrentRound() { CurrentRound++; }
+
 void StatXD::setEVXD() {
     double numer = PWin - DWin;
     double deno = PWin + DWin + Draw;
     EVXD = double(numer / deno);
+}
+
+void StatXD::printEVXD() {
+    cout << EVXD << " - ";
+    EVXDres.push_back(EVXD);
 }
 
 void StatXD::printStat() {
@@ -410,7 +437,10 @@ void StatXD::printStat() {
     cout << "Dealer has NGULINH " << DNLCount << " hands total" << '\n';
     cout << "Dealer wins with NGULINH " << DNLWinCount << " hands total" << '\n';
     cout << "NGULINH tie " << NLDrawCount << " times total" << '\n';
-    cout << '\n' << '\n' << "Final Expected Value: " << fixed << setprecision(3) << EVXD;
+
+    cout << "Expected Value every 100K rounds: " << '\n';
+    for (double& a : EVXDres) cout << a << " - ";
+    cout << '\n' << "Final Expected Value: " << fixed << setprecision(3) << EVXD;
 }
 
 void StatXD::exportStat(ofstream& file) {
@@ -481,6 +511,10 @@ void StatXD::exportStat(ofstream& file) {
     file << "PNLWinCount," << PNLWinCount << '\n';
     file << "DNLWinCount," << DNLWinCount << '\n';
     file << "NLDrawCount," << NLDrawCount << '\n';
+
+    file << "EV Every 100K";
+    for (double& x : EVXDres) file << "," << x ;
+    file << '\n';
     file << "Expected Value," << EVXD << '\n';
     file << "Number,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21\n";
     file.close();

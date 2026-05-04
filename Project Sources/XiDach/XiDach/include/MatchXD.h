@@ -21,15 +21,15 @@ public:
 
 	void doResultXD(Hand& p, Hand& d, int& result, StatXD& stat);
 
-	int playerWantsXD(Hand& p, Hand& d);
+	virtual int playerWantsXD(Hand& p, Hand& d, StatXD& stat);
 
 	void ProcessSimulationXD(Dealer& dealer, StatXD& stat);
 
-	void SimulationXD(ofstream& file);
+	virtual void SimulationXD(ofstream& file);
 
-	bool dealerWantsToCheck(Hand& p, Hand& d);
+	virtual bool dealerWantsToCheck(Hand& p, Hand& d);
 
-	int dealerWantsToAction(Hand& d);
+	virtual int dealerWantsToAction(Hand& d);
 
 	void ProcessPlayPlayer(Dealer& d);
 
@@ -39,11 +39,42 @@ public:
 
 	void DealerOptions(Dealer& dealer);
 
-	void ProcessPlayDealer(Dealer& dealer);
+	void ProcessPlayDealer(Dealer& dealer, StatXD& stat);
 
 	void PlayPlayer();
 
 	void PlayDealer();
 
 	void PlayXD();
+};
+
+class MatchXDAI : public MatchXD {
+protected:
+	Table3x3 HardHitTable = { {
+		{{0.5, 0.5, 0.5}},    // 16 điểm (2, 3, 4 lá)
+		{{0.5, 0.5, 0.5}},    // 17 điểm
+		{{0.5, 0.5, 0.5}}     // 18 điểm
+	} };
+
+	Table3x3 SoftHitTable = { {
+		{{0.5, 0.5, 0.5}},    // 16 điểm (2, 3, 4 lá)
+		{{0.5, 0.5, 0.5}},    // 17 điểm
+		{{0.5, 0.5, 0.5}}     // 18 điểm
+	} };
+	double mult = 0.1;
+	vector<Table3x3> Hard;
+	vector<Table3x3> Soft;
+public:
+	void LateLearning(StatXD& stat);
+	void FirstLearning(StatXD& stat);
+
+	void PrintTable(StatXD& stat) const;
+
+	int playerWantsXD(Hand& p, Hand& d, StatXD& stat) override;
+
+	bool dealerWantsToCheck(Hand& p, Hand& d) override;
+
+	int dealerWantsToAction(Hand& d) override;
+
+	void SimulationXD(ofstream& file) override;
 };

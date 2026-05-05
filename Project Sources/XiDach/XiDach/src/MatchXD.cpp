@@ -547,17 +547,16 @@ void MatchXD::ProcessPlayDealer(Dealer& dealer, StatXD& stat) {
 void MatchXD::PlayPlayer() {
     cout << "How many players?" << '\n';
     int n; cin >> n;
-    Match match;
-    match.dealer.hands[0].reset();
+    dealer.hands[0].reset();
     no3();
     no4();
     for (int i = 0; i < n; i++) {
-        match.addPlayer(i);
+        addPlayer(i);
     }
     setPlayerCount();
-    match.deckReset();
-    match.shuffle();
-    match.deal2Card();
+    deckReset();
+    shuffle();
+    deal2Card();
 
     ProcessPlayPlayer(dealer);
 }
@@ -566,17 +565,16 @@ void MatchXD::PlayDealer() {
     cout << "How many players?" << '\n';
     int n; cin >> n;
     StatXD stat;
-    Match match;
-    match.dealer.hands[0].reset();
+    dealer.hands[0].reset();
     no3();
     no4();
     for (int i = 0; i < n; i++) {
-        match.addPlayer(i);
+        addPlayer(i);
     }
     setPlayerCount();
-    match.deckReset();
-    match.shuffle();
-    match.deal2Card();
+    deckReset();
+    shuffle();
+    deal2Card();
 
     ProcessPlayDealer(dealer, stat);
 }
